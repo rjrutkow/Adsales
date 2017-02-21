@@ -34,8 +34,8 @@ type SimpleChaincode struct {
 
 // This is our structure for the broadcaster creating bulk inventory
 type adspot struct {
-	uniqueAdspotId     string  `json:"uniqueAdspotID"`
-	lotId              int     `json:"lotID"`
+	uniqueAdspotId     string  `json:"uniqueAdspotId"`
+	lotId              int     `json:"lotId"`
 	adspotId           int     `json:"adspotId"`
 	inventoryDate      string  `json:"inventoryDate"`
 	programName        string  `json:"programName"`
@@ -62,6 +62,25 @@ type adspot struct {
 	actualProgramName  string  `json:"actualProgramName"`
 	actualDemographics string  `json:"actualDemographics"`
 	makupAdspotId      string  `json:"makupAdspotId"`
+}
+
+//This is a broadcaster's inventory
+type releaseInventory struct {
+	lotId              int     `json:"lotId"`
+	adspotId           int     `json:"adspotId"`
+	inventoryDate      string  `json:"inventoryDate"`
+	programName        string  `json:"programName"`
+	seasonEpisode      string  `json:"seasonEpisode"`
+	broadcasterId      string  `json:"broadcasterId"`
+	genre              string  `json:"genre"`
+	dayPart            string  `json:"dayPart"`
+	targetGrp          float64 `json:"targetGrp"`
+	targetDemographics string  `json:"targetDemographics"`
+	initialCpm         float64 `json:"initialCpm"`
+	bsrp               float64 `json:"bsrp"`
+	numberOfSpots      int     `json:"numberofSpots"`
+	//releaseDate
+	//UniqueAdspotID
 }
 
 //This is a pointer to allAdspots
@@ -96,6 +115,40 @@ func (t *SimpleChaincode) Init(stub shim.ChaincodeStubInterface, function string
 	}
 
 	fmt.Println("Init Function Complete")
+	return nil, nil
+}
+
+//STEP 1 Function - Replease Broadcaster's Inventory
+func (t *SimpleChaincode) releaseInventory(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
+
+	fmt.Println("Running releaseInventory")
+
+	showArgs(args)
+
+	//var broadcasterID string = args[0]
+
+	//Outer Loop
+	for i := 1; i < len(args); i++ {
+		var releaseInventoryObj releaseInventory
+
+		//Unmarshall each argument, assign to releaseInventoryObj
+		b := []byte(args[i])
+		err := json.Unmarshal(b, &releaseInventoryObj)
+
+		if err != nil {
+			fmt.Println("Error Unmarshalling arguments")
+			return nil, err
+		} else {
+			fmt.Println(releaseInventoryObj.programName)
+		}
+
+	}
+
+	//Inner Loop
+	//for x := 1; x < releaseInventoryObj.numberOfSpots; x++ {
+	//TO DO add args to addSpotStructure object
+	//}
+
 	return nil, nil
 }
 
