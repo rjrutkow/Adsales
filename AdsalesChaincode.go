@@ -138,7 +138,8 @@ func (t *SimpleChaincode) releaseInventory(stub shim.ChaincodeStubInterface, arg
 			fmt.Println("Error Unmarshalling arguments")
 			return nil, err
 		} else {
-			fmt.Println(releaseInventoryObj.programName)
+			fmt.Println("Lot ID: %s", releaseInventoryObj.lotId)
+			fmt.Println("Program Name: %s", releaseInventoryObj.programName)
 		}
 
 	}
