@@ -33,51 +33,51 @@ type SimpleChaincode struct {
 
 // This is our structure for the broadcaster creating bulk inventory
 type adspot struct {
-	uniqueAdspotId     string  `json:"uniqueAdspotId"`
-	lotId              int     `json:"lotId"`
-	adspotId           int     `json:"adspotId"`
-	inventoryDate      string  `json:"inventoryDate"`
-	programName        string  `json:"programName"`
-	seasonEpisode      string  `json:"seasonEpisode"`
-	broadcasterId      string  `json:"broadcasterId"`
-	genre              string  `json:"genre"`
-	dayPart            string  `json:"dayPart"`
-	targetGrp          float64 `json:"targetGrp"`
-	targetDemographics string  `json:"targetDemographics"`
-	initialCpm         float64 `json:"initialCpm"`
-	bsrp               float64 `json:"bsrp"`
-	orderDate          string  `json:"orderDate"`
-	adAgencyId         string  `json:"adAgencyId"`
-	orderNumber        int     `json:"orderNumber"`
-	advertiserId       string  `json:"advertiserId"`
-	adContractId       int     `json:"adContractId"`
-	adAssignedDate     string  `json:"adAssignedDate"`
-	campaignName       string  `json:"campaignName"`
-	campaignId         string  `json:"campaignId"`
-	wasAired           string  `json:"wasAired"`
-	airedDate          string  `json:"airedDate"`
-	airedTime          string  `json:"airedTime"`
-	actualGrp          float64 `json:"actualGrp"`
-	actualProgramName  string  `json:"actualProgramName"`
-	actualDemographics string  `json:"actualDemographics"`
-	makupAdspotId      string  `json:"makupAdspotId"`
+	UniqueAdspotId     string  `json:"uniqueAdspotId"`
+	LotId              int     `json:"lotId"`
+	AdspotId           int     `json:"adspotId"`
+	InventoryDate      string  `json:"inventoryDate"`
+	ProgramName        string  `json:"programName"`
+	SeasonEpisode      string  `json:"seasonEpisode"`
+	BroadcasterId      string  `json:"broadcasterId"`
+	Genre              string  `json:"genre"`
+	DayPart            string  `json:"dayPart"`
+	TargetGrp          float64 `json:"targetGrp"`
+	TargetDemographics string  `json:"targetDemographics"`
+	InitialCpm         float64 `json:"initialCpm"`
+	Bsrp               float64 `json:"bsrp"`
+	OrderDate          string  `json:"orderDate"`
+	AdAgencyId         string  `json:"adAgencyId"`
+	OrderNumber        int     `json:"orderNumber"`
+	AdvertiserId       string  `json:"advertiserId"`
+	AdContractId       int     `json:"adContractId"`
+	AdAssignedDate     string  `json:"adAssignedDate"`
+	CampaignName       string  `json:"campaignName"`
+	CampaignId         string  `json:"campaignId"`
+	WasAired           string  `json:"wasAired"`
+	AiredDate          string  `json:"airedDate"`
+	AiredTime          string  `json:"airedTime"`
+	ActualGrp          float64 `json:"actualGrp"`
+	ActualProgramName  string  `json:"actualProgramName"`
+	ActualDemographics string  `json:"actualDemographics"`
+	MakupAdspotId      string  `json:"makupAdspotId"`
 }
 
 //This is a broadcaster's inventory
 type releaseInventory struct {
-	lotId              int     `json:"lotId"`
-	adspotId           int     `json:"adspotId"`
-	inventoryDate      string  `json:"inventoryDate"`
-	programName        string  `json:"programName"`
-	seasonEpisode      string  `json:"seasonEpisode"`
-	broadcasterId      string  `json:"broadcasterId"`
-	genre              string  `json:"genre"`
-	dayPart            string  `json:"dayPart"`
-	targetGrp          float64 `json:"targetGrp"`
-	targetDemographics string  `json:"targetDemographics"`
-	initialCpm         float64 `json:"initialCpm"`
-	bsrp               float64 `json:"bsrp"`
-	numberOfSpots      int     `json:"numberofSpots"`
+	LotID              string `json:"lotID"`
+	AdspotId           string `json:"adspotID"`
+	InventoryDate      string `json:"inventoryDate"`
+	ProgramName        string `json:"programName"`
+	SeasonEpisode      string `json:"seasonEpisode"`
+	BroadcasterId      string `json:"broadcasterId"`
+	Genre              string `json:"genre"`
+	DayPart            string `json:"dayPart"`
+	TargetGrp          string `json:"targetGrp"`
+	TargetDemographics string `json:"targetDemographics"`
+	InitialCpm         string `json:"initialCpm"`
+	Bsrp               string `json:"bsrp"`
+	NumberOfSpots      string `json:"numberofSpots"`
 	//releaseDate
 	//UniqueAdspotID
 }
@@ -122,26 +122,24 @@ func (t *SimpleChaincode) releaseInventory(stub shim.ChaincodeStubInterface, arg
 
 	fmt.Println("Running releaseInventory")
 
-	showArgs(args)
+	var broadcasterID string = args[0]
 
-	//var broadcasterID string = args[0]
+	fmt.Println(broadcasterID)
 
 	//Outer Loop
 	for i := 1; i < len(args); i++ {
+
+		var in string = args[i]
+
+		bytes := []byte(in)
 		var releaseInventoryObj releaseInventory
-
-		//Unmarshall each argument, assign to releaseInventoryObj
-		b := []byte(args[i])
-		err := json.Unmarshal(b, &releaseInventoryObj)
-
+		err := json.Unmarshal(bytes, &releaseInventoryObj)
 		if err != nil {
-			fmt.Println("Error Unmarshalling arguments")
-			return nil, err
-		} else {
-			fmt.Printf("Lot ID: %s\n", releaseInventoryObj.lotId)
-			fmt.Printf("Program Name: %s\n", releaseInventoryObj.programName)
+			panic(err)
 		}
 
+		fmt.Printf("%+v", releaseInventoryObj)
+		fmt.Printf("\n program name: %v \n", releaseInventoryObj.ProgramName)
 	}
 
 	//Inner Loop
