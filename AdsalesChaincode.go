@@ -23,7 +23,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"strconv"
 
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 )
@@ -152,7 +151,7 @@ func (t *SimpleChaincode) releaseInventory(stub shim.ChaincodeStubInterface, arg
 	return nil, nil
 }
 
-// Transaction makes payment of X units from A to B
+/* Transaction makes payment of X units from A to B
 func (t *SimpleChaincode) invoke(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 	fmt.Printf("Running invoke")
 
@@ -209,6 +208,7 @@ func (t *SimpleChaincode) invoke(stub shim.ChaincodeStubInterface, args []string
 
 	return nil, nil
 }
+*/
 
 // Deletes an entity from state
 func (t *SimpleChaincode) delete(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
@@ -239,20 +239,9 @@ func (t *SimpleChaincode) Invoke(stub shim.ChaincodeStubInterface, function stri
 	showArgs(args)
 
 	// Handle different functions
-	if function == "invoke" {
-		// Transaction makes payment of X units from A to B
-		fmt.Printf("Function is invoke")
-		return t.invoke(stub, args)
-	} else if function == "init" {
-		fmt.Printf("Function is init")
-		return t.Init(stub, function, args)
-	} else if function == "delete" {
-		// Deletes an entity from its state
-		fmt.Printf("Function is delete")
-		return t.delete(stub, args)
-	} else if function == "createBroadcasterLot" {
-		fmt.Printf("Function is createBroadcasterLot")
-		return t.delete(stub, args)
+	if function == "releaseInventory" {
+		fmt.Printf("Function is releaseInventory")
+		return t.releaseInventory(stub, args)
 	}
 
 	return nil, errors.New("Received unknown function invocation")
@@ -260,6 +249,7 @@ func (t *SimpleChaincode) Invoke(stub shim.ChaincodeStubInterface, function stri
 
 // args: 0=BroadcasterID, 1=lotID, 2=Spots, 3=Ratings, 4=Demographics, 5=InitialPricePerSpot
 
+/*
 func (t *SimpleChaincode) Run(stub shim.ChaincodeStubInterface, function string, args []string) ([]byte, error) {
 	fmt.Printf("Run called, passing through to Invoke (same function)")
 
@@ -281,6 +271,7 @@ func (t *SimpleChaincode) Run(stub shim.ChaincodeStubInterface, function string,
 
 	return nil, errors.New("Received unknown function invocation")
 }
+*/
 
 // Query callback representing the query of a chaincode
 func (t *SimpleChaincode) Query(stub shim.ChaincodeStubInterface, function string, args []string) ([]byte, error) {
