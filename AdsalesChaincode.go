@@ -1,22 +1,3 @@
-/*
-Licensed to the Apache Software Foundation (ASF) under one
-or more contributor license agreements.  See the NOTICE file
-distributed with this work for additional information
-regarding copyright ownership.  The ASF licenses this file
-to you under the Apache License, Version 2.0 (the
-"License"); you may not use this file except in compliance
-with the License.  You may obtain a copy of the License at
-
-  http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing,
-software distributed under the License is distributed on an
-"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-KIND, either express or implied.  See the License for the
-specific language governing permissions and limitations
-under the License .
-*/
-
 package main
 
 import (
@@ -183,8 +164,7 @@ func (t *SimpleChaincode) releaseInventory(stub shim.ChaincodeStubInterface, arg
 
 			fmt.Printf("ThisAdspot: %+v", ThisAdspot)
 
-			//marshalling
-
+			t.putAdspot(stub, ThisAdspot)
 		}
 
 	}
@@ -192,64 +172,37 @@ func (t *SimpleChaincode) releaseInventory(stub shim.ChaincodeStubInterface, arg
 	return nil, nil
 }
 
-/* Transaction makes payment of X units from A to B
-func (t *SimpleChaincode) invoke(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
-	fmt.Printf("Running invoke")
-
-	showArgs(args)
-
-	var A, B string    // Entities
-	var Aval, Bval int // Asset holdings
-	var X int          // Transaction value
-	var err error
-
-	if len(args) != 3 {
-		return nil, errors.New("Incorrect number of arguments. Expecting 3")
-	}
-
-	A = args[0]
-	B = args[1]
-
-	// Get the state from the ledger
-	// TODO: will be nice to have a GetAllState call to ledger
-	Avalbytes, err := stub.GetState(A)
+func (t *SimpleChaincode) putAdspot(stub shim.ChaincodeStubInterface, adspotObj adspot) ([]byte, error) {
+	//marshalling
+	fmt.Println("Launching marshallAspot helper function")
+	bytes, _ := json.Marshal(adspotObj)
+	err := stub.PutState(adspotObj.UniqueAdspotId, bytes)
 	if err != nil {
-		return nil, errors.New("Failed to get state")
+		fmt.Println("Error - could not Marshall")
+		//return nil, err
 	}
-	if Avalbytes == nil {
-		return nil, errors.New("Entity not found")
-	}
-	Aval, _ = strconv.Atoi(string(Avalbytes))
-
-	Bvalbytes, err := stub.GetState(B)
-	if err != nil {
-		return nil, errors.New("Failed to get state")
-	}
-	if Bvalbytes == nil {
-		return nil, errors.New("Entity not found")
-	}
-	Bval, _ = strconv.Atoi(string(Bvalbytes))
-
-	// Perform the execution
-	X, err = strconv.Atoi(args[2])
-	Aval = Aval - X
-	Bval = Bval + X
-	fmt.Printf("Aval = %d, Bval = %d\n", Aval, Bval)
-
-	// Write the state back to the ledger
-	err = stub.PutState(A, []byte(strconv.Itoa(Aval)))
-	if err != nil {
-		return nil, err
-	}
-
-	err = stub.PutState(B, []byte(strconv.Itoa(Bval)))
-	if err != nil {
-		return nil, err
-	}
-
+	fmt.Println("Marshalling Successful")
 	return nil, nil
 }
-*/
+
+func (t *SimpleChaincode) getAdspot(stub shim.ChaincodeStubInterface, uniqueAdspotId string) (adspot, error) {
+	//unmarshalling
+	fmt.Println("Launching unmarshallAspot helper function")
+	bytes, err := stub.GetState(uniqueAdspotId)
+	if err != nil {
+		fmt.Println("Error - Could not get Unique Adspot ID")
+		//return nil, err
+	}
+
+	var adspotObj adspot
+	err = json.Unmarshal(bytes, &adspotObj)
+	if err != nil {
+		fmt.Println("Error - could not Unmarshall")
+	}
+
+	fmt.Println("Unmarshalling Successful")
+	return adspotObj, err
+}
 
 // Deletes an entity from state
 func (t *SimpleChaincode) delete(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
