@@ -24,6 +24,8 @@ import (
 	"errors"
 	"fmt"
 
+	"strings"
+
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 )
 
@@ -123,6 +125,7 @@ func (t *SimpleChaincode) releaseInventory(stub shim.ChaincodeStubInterface, arg
 	fmt.Println("Running releaseInventory")
 
 	var broadcasterID string = args[0]
+	var noData string = "NA"
 
 	fmt.Println(broadcasterID)
 
@@ -140,12 +143,45 @@ func (t *SimpleChaincode) releaseInventory(stub shim.ChaincodeStubInterface, arg
 
 		fmt.Printf("%+v", releaseInventoryObj)
 		fmt.Printf("\n program name: %v \n", releaseInventoryObj.ProgramName)
-	}
 
-	//Inner Loop
-	//for x := 1; x < releaseInventoryObj.numberOfSpots; x++ {
-	//TO DO add args to addSpotStructure object
-	//}
+		var NumberOfSpots string
+		NumberOfSpots = releaseInventoryObj.NumberOfSpots
+		for x := 0; x < NumberOfSpots; x++ {
+			var ThisAdspot adspot
+			ThisAdspot.UniqueAdspotId = strings.Join(broadcasterID, "_") //(broadcasterID) += "_" += (releaseInventoryObj.LotID)
+			ThisAdspot.LotId = releaseInventoryObj.LotID
+			ThisAdspot.AdspotId = releaseInventoryObj.AdspotId
+			ThisAdspot.InventoryDate = releaseInventoryObj.InventoryDate
+			ThisAdspot.ProgramName = releaseInventoryObj.ProgramName
+			ThisAdspot.SeasonEpisode = releaseInventoryObj.SeasonEpisode
+			ThisAdspot.BroadcasterId = broadcasterID
+			ThisAdspot.Genre = releaseInventoryObj.Genre
+			ThisAdspot.DayPart = releaseInventoryObj.DayPart
+			ThisAdspot.TargetGrp = releaseInventoryObj.TargetGrp
+			ThisAdspot.TargetDemographics = releaseInventoryObj.TargetDemographics
+			ThisAdspot.InitialCpm = releaseInventoryObj.InitialCpm
+			ThisAdspot.Bsrp = releaseInventoryObj.Bsrp
+			ThisAdspot.OrderDate = noData
+			ThisAdspot.AdAgencyId = noData
+			ThisAdspot.OrderNumber = noData
+			ThisAdspot.AdvertiserId = noData
+			ThisAdspot.AdContractId = noData
+			ThisAdspot.AdAssignedDate = noData
+			ThisAdspot.CampaignName = noData
+			ThisAdspot.CampaignId = noData
+			ThisAdspot.WasAired = noData
+			ThisAdspot.AiredDate = noData
+			ThisAdspot.AiredTime = noData
+			ThisAdspot.ActualGrp = noData
+			ThisAdspot.ActualProgramName = noData
+			ThisAdspot.ActualDemographics = noData
+			ThisAdspot.MakupAdspotId = noData
+
+			//marshalling
+
+		}
+
+	}
 
 	return nil, nil
 }
