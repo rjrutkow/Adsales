@@ -81,19 +81,14 @@ func showArgs(args []string) {
 // Init function
 func (t *SimpleChaincode) Init(stub shim.ChaincodeStubInterface, function string, args []string) ([]byte, error) {
 
-	var err error
-
 	fmt.Println("Launching Init Function")
+
+	broadcasterId := "BroadcasterA"
 
 	//Create array for all adspots in ledger
 	var AllAdspotsArray AllAdspots
 
-	jsonAsBytes, _ := json.Marshal(AllAdspotsArray)
-	err = stub.PutState("BroadcasterA", jsonAsBytes)
-	if err != nil {
-		fmt.Println("Error Creating AllAdspotsArray")
-		return nil, err
-	}
+	t.putAllAdspotPointers(stub, AllAdspotsArray, broadcasterId)
 
 	fmt.Println("Init Function Complete")
 	return nil, nil
@@ -109,6 +104,8 @@ func (t *SimpleChaincode) releaseInventory(stub shim.ChaincodeStubInterface, arg
 	var increment = 1
 
 	fmt.Println(broadcasterID)
+
+	allAdspotPointers, _ := t.getAllAdspotPointers(stub, broadcasterID)
 
 	//Outer Loop
 	for i := 1; i < len(args); i++ {
@@ -161,33 +158,34 @@ func (t *SimpleChaincode) releaseInventory(stub shim.ChaincodeStubInterface, arg
 			ThisAdspot.MakupAdspotId = noData
 
 			increment++
-
 			fmt.Printf("ThisAdspot: %+v", ThisAdspot)
+			allAdspotPointers.UniqueAdspotId = append(allAdspotPointers.UniqueAdspotId, ThisAdspot.UniqueAdspotId)
 
 			t.putAdspot(stub, ThisAdspot)
 		}
 
 	}
 
+	t.putAllAdspotPointers(stub, allAdspotPointers, broadcasterID)
 	return nil, nil
 }
 
 func (t *SimpleChaincode) putAdspot(stub shim.ChaincodeStubInterface, adspotObj adspot) ([]byte, error) {
 	//marshalling
-	fmt.Println("Launching marshallAspot helper function")
+	fmt.Println("Launching putAdspot helper function")
 	bytes, _ := json.Marshal(adspotObj)
 	err := stub.PutState(adspotObj.UniqueAdspotId, bytes)
 	if err != nil {
-		fmt.Println("Error - could not Marshall")
+		fmt.Println("Error - could not Marshall in putAdspot")
 		//return nil, err
 	}
-	fmt.Println("Marshalling Successful")
+	fmt.Println("Function Complete")
 	return nil, nil
 }
 
 func (t *SimpleChaincode) getAdspot(stub shim.ChaincodeStubInterface, uniqueAdspotId string) (adspot, error) {
 	//unmarshalling
-	fmt.Println("Launching unmarshallAspot helper function")
+	fmt.Println("Launching getAdspot helper function")
 	bytes, err := stub.GetState(uniqueAdspotId)
 	if err != nil {
 		fmt.Println("Error - Could not get Unique Adspot ID")
@@ -197,13 +195,46 @@ func (t *SimpleChaincode) getAdspot(stub shim.ChaincodeStubInterface, uniqueAdsp
 	var adspotObj adspot
 	err = json.Unmarshal(bytes, &adspotObj)
 	if err != nil {
-		fmt.Println("Error - could not Unmarshall")
+		fmt.Println("Error - could not Unmarshall in getAdspot")
 	}
 
-	fmt.Println("Unmarshalling Successful")
+	fmt.Println("Function Complete")
 	return adspotObj, err
 }
 
+func (t *SimpleChaincode) getAllAdspotPointers(stub shim.ChaincodeStubInterface, broadcasterId string) (AllAdspots, error) {
+	//unmarshalling
+	fmt.Println("Launching getAllAdspotPointers helper function")
+	bytes, err := stub.GetState(broadcasterId)
+	if err != nil {
+		fmt.Println("Error - Could not get Broadcaster ID")
+		//return nil, err
+	}
+
+	var allAdspotPointers AllAdspots
+	err = json.Unmarshal(bytes, &allAdspotPointers)
+	if err != nil {
+		fmt.Println("Error - could not Unmarshall within getAllAdspotPointers")
+	}
+
+	fmt.Println("Function Complete")
+	return allAdspotPointers, err
+}
+
+func (t *SimpleChaincode) putAllAdspotPointers(stub shim.ChaincodeStubInterface, allAdspotsObj AllAdspots, broadcasterId string) ([]byte, error) {
+	//marshalling
+	fmt.Println("Launching putAllAdspotPointers helper function")
+	bytes, _ := json.Marshal(allAdspotsObj)
+	err := stub.PutState(broadcasterId, bytes)
+	if err != nil {
+		fmt.Println("Error - could not Marshall in putAllAdspotPointers")
+		//return nil, err
+	}
+	fmt.Println("Function Complete")
+	return nil, nil
+}
+
+// -----------------------------------------------------------------------------------------------------
 // Deletes an entity from state
 func (t *SimpleChaincode) delete(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 	fmt.Printf("Running delete")
