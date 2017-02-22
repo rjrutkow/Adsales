@@ -23,8 +23,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-
-	"strings"
+	"strconv"
 
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 )
@@ -86,7 +85,7 @@ type releaseInventory struct {
 
 //This is a pointer to allAdspots
 type AllAdspots struct {
-	uniqueAdspotId []string `json:"uniqueAdspotId"`
+	UniqueAdspotId []string `json:"uniqueAdspotId"`
 }
 
 //For Debugging
@@ -124,15 +123,16 @@ func (t *SimpleChaincode) releaseInventory(stub shim.ChaincodeStubInterface, arg
 
 	fmt.Println("Running releaseInventory")
 
-	var broadcasterID string = args[0]
-	var noData string = "NA"
+	var broadcasterID = args[0]
+	var noData = "NA"
+	var increment = 1
 
 	fmt.Println(broadcasterID)
 
 	//Outer Loop
 	for i := 1; i < len(args); i++ {
 
-		var in string = args[i]
+		var in = args[i]
 
 		bytes := []byte(in)
 		var releaseInventoryObj releaseInventory
@@ -144,38 +144,44 @@ func (t *SimpleChaincode) releaseInventory(stub shim.ChaincodeStubInterface, arg
 		fmt.Printf("%+v", releaseInventoryObj)
 		fmt.Printf("\n program name: %v \n", releaseInventoryObj.ProgramName)
 
-		var NumberOfSpots string
-		NumberOfSpots = releaseInventoryObj.NumberOfSpots
+		NumberOfSpots, _ := strconv.Atoi(releaseInventoryObj.NumberOfSpots)
+
 		for x := 0; x < NumberOfSpots; x++ {
 			var ThisAdspot adspot
-			ThisAdspot.UniqueAdspotId = strings.Join(broadcasterID, "_") //(broadcasterID) += "_" += (releaseInventoryObj.LotID)
-			ThisAdspot.LotId = releaseInventoryObj.LotID
-			ThisAdspot.AdspotId = releaseInventoryObj.AdspotId
+
+			ThisAdspot.UniqueAdspotId = ("1000_" + string(increment))
+			ThisAdspot.LotId, _ = strconv.Atoi(releaseInventoryObj.LotID)
+			ThisAdspot.AdspotId, _ = strconv.Atoi(releaseInventoryObj.AdspotId)
 			ThisAdspot.InventoryDate = releaseInventoryObj.InventoryDate
 			ThisAdspot.ProgramName = releaseInventoryObj.ProgramName
 			ThisAdspot.SeasonEpisode = releaseInventoryObj.SeasonEpisode
 			ThisAdspot.BroadcasterId = broadcasterID
 			ThisAdspot.Genre = releaseInventoryObj.Genre
 			ThisAdspot.DayPart = releaseInventoryObj.DayPart
-			ThisAdspot.TargetGrp = releaseInventoryObj.TargetGrp
+
+			ThisAdspot.TargetGrp, _ = strconv.ParseFloat(releaseInventoryObj.TargetGrp, 64)
 			ThisAdspot.TargetDemographics = releaseInventoryObj.TargetDemographics
-			ThisAdspot.InitialCpm = releaseInventoryObj.InitialCpm
-			ThisAdspot.Bsrp = releaseInventoryObj.Bsrp
+			ThisAdspot.InitialCpm, _ = strconv.ParseFloat(releaseInventoryObj.InitialCpm, 64)
+			ThisAdspot.Bsrp, _ = strconv.ParseFloat(releaseInventoryObj.Bsrp, 64)
 			ThisAdspot.OrderDate = noData
 			ThisAdspot.AdAgencyId = noData
-			ThisAdspot.OrderNumber = noData
+			ThisAdspot.OrderNumber = -1
 			ThisAdspot.AdvertiserId = noData
-			ThisAdspot.AdContractId = noData
+			ThisAdspot.AdContractId = -1
 			ThisAdspot.AdAssignedDate = noData
 			ThisAdspot.CampaignName = noData
 			ThisAdspot.CampaignId = noData
 			ThisAdspot.WasAired = noData
 			ThisAdspot.AiredDate = noData
 			ThisAdspot.AiredTime = noData
-			ThisAdspot.ActualGrp = noData
+			ThisAdspot.ActualGrp = -1
 			ThisAdspot.ActualProgramName = noData
 			ThisAdspot.ActualDemographics = noData
 			ThisAdspot.MakupAdspotId = noData
+
+			increment++
+
+			fmt.Printf("ThisAdspot: %+v", ThisAdspot)
 
 			//marshalling
 
