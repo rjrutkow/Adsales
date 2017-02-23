@@ -94,6 +94,23 @@ type AllAdspots struct {
 	UniqueAdspotId []string `json:"uniqueAdspotId"`
 }
 
+type queryPlaceOrdersStruc struct {
+	LotId              int     `json:"lotId"`
+	AdspotId           int     `json:"adspotId"`
+	ProgramName        string  `json:"programName"`
+	BroadcasterId      string  `json:"broadcasterId"`
+	Genre              string  `json:"genre"`
+	DayPart            string  `json:"dayPart"`
+	TargetGrp          float64 `json:"targetGrp"`
+	TargetDemographics string  `json:"targetDemographics"`
+	InitialCpm         float64 `json:"initialCpm"`
+	Bsrp               float64 `json:"bsrp"`
+}
+
+type queryPlaceOrdersArray struct {
+	PlacedOrderData []queryPlaceOrdersStruc `json:"placedOrderData"`
+}
+
 const noData string = "NA"
 const noValue int = -1
 
@@ -160,7 +177,7 @@ func (t *SimpleChaincode) releaseInventory(stub shim.ChaincodeStubInterface, arg
 		for x := 0; x < NumberOfSpots; x++ {
 			var ThisAdspot adspot
 
-			ThisAdspot.UniqueAdspotId = ("1000_" + strconv.Itoa(increment))
+			ThisAdspot.UniqueAdspotId = (releaseInventoryObj.LotId + "_" + strconv.Itoa(increment))
 			ThisAdspot.LotId, _ = strconv.Atoi(releaseInventoryObj.LotId)
 			ThisAdspot.AdspotId, _ = strconv.Atoi(releaseInventoryObj.AdspotId)
 			ThisAdspot.InventoryDate = releaseInventoryObj.InventoryDate
@@ -214,7 +231,7 @@ func (t *SimpleChaincode) placeOrders(stub shim.ChaincodeStubInterface, args []s
 	broadcasterId := args[1]
 
 	broadcasterAllAdspotsPointers, _ := t.getAllAdspotPointers(stub, broadcasterId)
-	agencyAllAdsportsPointers, _ := t.getAllAdspotPointers(stub, agencyId)
+	agencyAllAdspotsPointers, _ := t.getAllAdspotPointers(stub, agencyId)
 
 	// loop through all entries
 	for i := 2; i < len(args); i++ {
@@ -261,7 +278,7 @@ func (t *SimpleChaincode) placeOrders(stub shim.ChaincodeStubInterface, args []s
 					t.putAdspot(stub, AdSpotObj)
 
 					// save all pointers for appropriate ad agency
-					agencyAllAdsportsPointers.UniqueAdspotId = append(agencyAllAdsportsPointers.UniqueAdspotId, AdSpotObj.UniqueAdspotId)
+					agencyAllAdspotsPointers.UniqueAdspotId = append(agencyAllAdspotsPointers.UniqueAdspotId, AdSpotObj.UniqueAdspotId)
 
 					// save all pointers for appropriate advertiser
 					advertiserAllAdsportsPointers.UniqueAdspotId = append(advertiserAllAdsportsPointers.UniqueAdspotId, AdSpotObj.UniqueAdspotId)
@@ -278,9 +295,45 @@ func (t *SimpleChaincode) placeOrders(stub shim.ChaincodeStubInterface, args []s
 		}
 	}
 
-	t.putAllAdspotPointers(stub, agencyAllAdsportsPointers, agencyId)
+	t.putAllAdspotPointers(stub, agencyAllAdspotsPointers, agencyId)
 
 	return nil, nil
+}
+
+func (t *SimpleChaincode) queryPlaceOrders(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
+	//agencyId := args[0]
+	fmt.Println("Launching queryPlaceOrders Function")
+	broadcasterId := args[1]
+	var queryPlaceOrdersArrayObj queryPlaceOrdersArray
+
+	broadcasterAllAdspotsPointers, _ := t.getAllAdspotPointers(stub, broadcasterId)
+
+	for i := 0; i < len(broadcasterAllAdspotsPointers.UniqueAdspotId); i++ {
+		var queryPlaceOrdersStrucObj queryPlaceOrdersStruc
+		ThisAdspot, _ := t.getAdspot(stub, broadcasterAllAdspotsPointers.UniqueAdspotId[i])
+		queryPlaceOrdersStrucObj.AdspotId = ThisAdspot.AdspotId
+		queryPlaceOrdersStrucObj.BroadcasterId = ThisAdspot.BroadcasterId
+		queryPlaceOrdersStrucObj.Bsrp = ThisAdspot.Bsrp
+		queryPlaceOrdersStrucObj.DayPart = ThisAdspot.DayPart
+		queryPlaceOrdersStrucObj.Genre = ThisAdspot.Genre
+		queryPlaceOrdersStrucObj.InitialCpm = ThisAdspot.InitialCpm
+		queryPlaceOrdersStrucObj.LotId = ThisAdspot.LotId
+		queryPlaceOrdersStrucObj.ProgramName = ThisAdspot.ProgramName
+		queryPlaceOrdersStrucObj.TargetDemographics = ThisAdspot.TargetDemographics
+		queryPlaceOrdersStrucObj.TargetGrp = ThisAdspot.TargetGrp
+
+		queryPlaceOrdersArrayObj.PlacedOrderData = append(queryPlaceOrdersArrayObj.PlacedOrderData, queryPlaceOrdersStrucObj)
+	}
+
+	jsonAsBytes, err := json.Marshal(queryPlaceOrdersArrayObj)
+	if err != nil {
+		fmt.Println("Error returning json output for queryPlaceOrders ")
+		return nil, err
+	}
+
+	fmt.Println("queryPlaceOrders Function Complete")
+	fmt.Printf("queryPlaceOrdersArrayObj: %+v ", queryPlaceOrdersArrayObj)
+	return jsonAsBytes, nil
 }
 
 func (t *SimpleChaincode) putAdspot(stub shim.ChaincodeStubInterface, adspotObj adspot) ([]byte, error) {
@@ -443,34 +496,14 @@ func (t *SimpleChaincode) Query(stub shim.ChaincodeStubInterface, function strin
 
 	showArgs(args)
 
-	if function != "Query" {
-		fmt.Printf("Function is Query")
-		return nil, errors.New("Invalid query function name. Expecting \"query\"")
-	}
-	var A string // Entities
-	var err error
-
-	if len(args) != 1 {
-		return nil, errors.New("Incorrect number of arguments. Expecting name of the person to query")
+	if function == "queryPlaceOrders" {
+		fmt.Printf("Function is queryPlaceOrders")
+		return t.queryPlaceOrders(stub, args)
+	} else {
+		fmt.Printf("Invalid Function!")
 	}
 
-	A = args[0]
-
-	// Get the state from the ledger
-	Avalbytes, err := stub.GetState(A)
-	if err != nil {
-		jsonResp := "{\"Error\":\"Failed to get state for " + A + "\"}"
-		return nil, errors.New(jsonResp)
-	}
-
-	if Avalbytes == nil {
-		jsonResp := "{\"Error\":\"Nil amount for " + A + "\"}"
-		return nil, errors.New(jsonResp)
-	}
-
-	jsonResp := "{\"Name\":\"" + A + "\",\"Amount\":\"" + string(Avalbytes) + "\"}"
-	fmt.Printf("Query Response:%s\n", jsonResp)
-	return Avalbytes, nil
+	return nil, nil
 }
 
 /*
