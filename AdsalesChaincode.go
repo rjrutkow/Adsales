@@ -101,7 +101,7 @@ func (t *SimpleChaincode) releaseInventory(stub shim.ChaincodeStubInterface, arg
 
 	var broadcasterID = args[0]
 	var noData = "NA"
-	var increment = 1
+	var increment = 1000
 
 	fmt.Println(broadcasterID)
 
@@ -127,7 +127,7 @@ func (t *SimpleChaincode) releaseInventory(stub shim.ChaincodeStubInterface, arg
 		for x := 0; x < NumberOfSpots; x++ {
 			var ThisAdspot adspot
 
-			ThisAdspot.UniqueAdspotId = ("1000_" + string(increment))
+			ThisAdspot.UniqueAdspotId = string(increment) // ("1000_" + string(increment))
 			ThisAdspot.LotId, _ = strconv.Atoi(releaseInventoryObj.LotID)
 			ThisAdspot.AdspotId, _ = strconv.Atoi(releaseInventoryObj.AdspotId)
 			ThisAdspot.InventoryDate = releaseInventoryObj.InventoryDate
