@@ -128,6 +128,7 @@ func (t *SimpleChaincode) Init(stub shim.ChaincodeStubInterface, function string
 
 	fmt.Println("Launching Init Function")
 
+	//Peers hard coded here
 	broadcasterId := "BroadcasterA"
 	agencyId := "AgencyA"
 	advertiser1Id := "AdvertiserA"
@@ -222,6 +223,7 @@ func (t *SimpleChaincode) releaseInventory(stub shim.ChaincodeStubInterface, arg
 }
 
 //STEP 2 Function - Place Orders for ad spots
+// NEEDS TESTING
 func (t *SimpleChaincode) placeOrders(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 
 	fmt.Println("Running placeOrders")
@@ -256,7 +258,7 @@ func (t *SimpleChaincode) placeOrders(stub shim.ChaincodeStubInterface, args []s
 
 			advertiserAllAdsportsPointers, _ := t.getAllAdspotPointers(stub, placeOrdersObj.AdvertiserId)
 
-			if AdSpotObj.AdspotId == spotid && AdSpotObj.AdContractId == noValue { // found adspot and  ad spot not taken
+			if (AdSpotObj.AdspotId == spotid) && (AdSpotObj.AdContractId == noValue) { // found adspot and  ad spot not taken
 				numberOfSpotsToPurchase, _ := strconv.Atoi(placeOrdersObj.NumberOfSpots)
 
 				fmt.Printf("Inside if AdSpotObj.AdspotId == spotid && AdSpotObj.AdContractId == noValue \n")
@@ -265,6 +267,7 @@ func (t *SimpleChaincode) placeOrders(stub shim.ChaincodeStubInterface, args []s
 				fmt.Printf("AdSpotObj.AdContractId: %v \n", AdSpotObj.AdContractId)
 				fmt.Println("END IF")
 
+				//Loop on number of spots to purchase
 				for k := 0; k < numberOfSpotsToPurchase; k++ {
 					if k > 0 { // get the correct ad spot if needed
 						uniqueAdspotKey = broadcasterAllAdspotsPointers.UniqueAdspotId[j+k]
@@ -311,18 +314,21 @@ func (t *SimpleChaincode) queryPlaceOrders(stub shim.ChaincodeStubInterface, arg
 	for i := 0; i < len(broadcasterAllAdspotsPointers.UniqueAdspotId); i++ {
 		var queryPlaceOrdersStrucObj queryPlaceOrdersStruc
 		ThisAdspot, _ := t.getAdspot(stub, broadcasterAllAdspotsPointers.UniqueAdspotId[i])
-		queryPlaceOrdersStrucObj.AdspotId = ThisAdspot.AdspotId
-		queryPlaceOrdersStrucObj.BroadcasterId = ThisAdspot.BroadcasterId
-		queryPlaceOrdersStrucObj.Bsrp = ThisAdspot.Bsrp
-		queryPlaceOrdersStrucObj.DayPart = ThisAdspot.DayPart
-		queryPlaceOrdersStrucObj.Genre = ThisAdspot.Genre
-		queryPlaceOrdersStrucObj.InitialCpm = ThisAdspot.InitialCpm
-		queryPlaceOrdersStrucObj.LotId = ThisAdspot.LotId
-		queryPlaceOrdersStrucObj.ProgramName = ThisAdspot.ProgramName
-		queryPlaceOrdersStrucObj.TargetDemographics = ThisAdspot.TargetDemographics
-		queryPlaceOrdersStrucObj.TargetGrp = ThisAdspot.TargetGrp
 
-		queryPlaceOrdersArrayObj.PlacedOrderData = append(queryPlaceOrdersArrayObj.PlacedOrderData, queryPlaceOrdersStrucObj)
+		//Code Fix: If statement needs to be checked
+		if ThisAdspot.AdContractId == noValue {
+			queryPlaceOrdersStrucObj.AdspotId = ThisAdspot.AdspotId
+			queryPlaceOrdersStrucObj.BroadcasterId = ThisAdspot.BroadcasterId
+			queryPlaceOrdersStrucObj.Bsrp = ThisAdspot.Bsrp
+			queryPlaceOrdersStrucObj.DayPart = ThisAdspot.DayPart
+			queryPlaceOrdersStrucObj.Genre = ThisAdspot.Genre
+			queryPlaceOrdersStrucObj.InitialCpm = ThisAdspot.InitialCpm
+			queryPlaceOrdersStrucObj.LotId = ThisAdspot.LotId
+			queryPlaceOrdersStrucObj.ProgramName = ThisAdspot.ProgramName
+			queryPlaceOrdersStrucObj.TargetDemographics = ThisAdspot.TargetDemographics
+			queryPlaceOrdersStrucObj.TargetGrp = ThisAdspot.TargetGrp
+			queryPlaceOrdersArrayObj.PlacedOrderData = append(queryPlaceOrdersArrayObj.PlacedOrderData, queryPlaceOrdersStrucObj)
+		}
 	}
 
 	jsonAsBytes, err := json.Marshal(queryPlaceOrdersArrayObj)
