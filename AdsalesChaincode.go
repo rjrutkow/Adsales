@@ -126,7 +126,7 @@ type queryAdspotsToMapArray struct {
 	AdspotsToMapData []queryAdspotsToMapStruct `json:"adspotsToMapData"`
 }
 
-//This is a helper structure for mapping adspots (STEP 3)
+//This is a helper structure for querying adspots to be mapped (STEP 3)
 type queryAdspotsToMapStruct struct {
 	UniqueAdspotId     string  `json:"uniqueAdspotId"`
 	BroadcasterId      string  `json:"broadcasterId"`
@@ -136,6 +136,12 @@ type queryAdspotsToMapStruct struct {
 	TargetGrp          float64 `json:"targetGrp"`
 	TargetDemographics string  `json:"targetDemographics"`
 	InitialCpm         float64 `json:"initialCpm"`
+}
+
+//This is a helper structure for mapping adspots (STEP 3)
+type mapAdspots struct {
+	UniqueAdspotId string `json:"uniqueAdspotId"`
+	CampaignName   string `json:"campaignName"`
 }
 
 //For Debugging
@@ -226,7 +232,7 @@ func (t *SimpleChaincode) releaseInventory(stub shim.ChaincodeStubInterface, arg
 }
 
 //STEP 2 Function - Place Orders for ad spots
-// NEEDS TESTING
+//Testing is OK
 func (t *SimpleChaincode) placeOrders(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 
 	fmt.Println("Running placeOrders")
@@ -306,6 +312,7 @@ func (t *SimpleChaincode) placeOrders(stub shim.ChaincodeStubInterface, args []s
 	return nil, nil
 }
 
+//STEP 2 Function - Query all the adspots from placed orders
 func (t *SimpleChaincode) queryPlaceOrders(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 	//agencyId := args[0]
 	fmt.Println("Launching queryPlaceOrders Function")
@@ -318,7 +325,6 @@ func (t *SimpleChaincode) queryPlaceOrders(stub shim.ChaincodeStubInterface, arg
 		var queryPlaceOrdersStrucObj queryPlaceOrdersStruc
 		ThisAdspot, _ := t.getAdspot(stub, broadcasterAllAdspotsPointers.UniqueAdspotId[i])
 
-		//Code Fix: If statement needs to be checked
 		if ThisAdspot.AdContractId == noValue {
 			queryPlaceOrdersStrucObj.AdspotId = ThisAdspot.AdspotId
 			queryPlaceOrdersStrucObj.BroadcasterId = ThisAdspot.BroadcasterId
@@ -345,6 +351,7 @@ func (t *SimpleChaincode) queryPlaceOrders(stub shim.ChaincodeStubInterface, arg
 	return jsonAsBytes, nil
 }
 
+//STEP 3 Function - Query Adspots to display on UI before mapping Ads
 func (t *SimpleChaincode) queryAdspotsToMap(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 	fmt.Println("Launching queryAdspotsToMap Function")
 
@@ -377,6 +384,49 @@ func (t *SimpleChaincode) queryAdspotsToMap(stub shim.ChaincodeStubInterface, ar
 	fmt.Println("queryAdspotsToMap Function Complete")
 	fmt.Printf("queryAdspotsToMapArrayObj: %+v ", queryAdspotsToMapArrayObj)
 	return jsonAsBytes, nil
+}
+
+//////////////////////////////////////////////////////////////////////////////////////
+//STEP 3 Function - Map the Campaign Names to Adspots
+func (t *SimpleChaincode) mapAdspots(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
+
+	fmt.Println("Running mapAdspots")
+	showArgs(args)
+
+	agencyId := args[0]
+
+	agencyAllAdspotsPointers, _ := t.getAllAdspotPointers(stub, agencyId)
+
+	//Loop through all the arguments
+	for i := 1; i < len(args); i++ {
+
+		in := args[i]
+		bytes := []byte(in)
+		var mapAdspotsObj mapAdspots
+		err := json.Unmarshal(bytes, &mapAdspotsObj)
+		if err != nil {
+			panic(err)
+		}
+		fmt.Printf("Map Adspot Object: %+v", mapAdspotsObj)
+
+		// now look through the inventory of ad spots, find match
+		for j := 0; j < len(agencyAllAdspotsPointers.UniqueAdspotId); j++ {
+			uniqueAdspotKey := agencyAllAdspotsPointers.UniqueAdspotId[j]
+			AdSpotObj, _ := t.getAdspot(stub, uniqueAdspotKey)
+
+			if AdSpotObj.UniqueAdspotId == mapAdspotsObj.UniqueAdspotId {
+				AdSpotObj.CampaignName = mapAdspotsObj.CampaignName
+				fmt.Printf("Unique Adspot Id Matched! Adspot Obj is:", AdSpotObj)
+				t.putAdspot(stub, AdSpotObj)
+			} else {
+				fmt.Println("Unique Adspot ID Mismatch in mapAdspots - need to re-evaluate logic")
+			}
+
+		}
+
+	}
+
+	return nil, nil
 }
 
 //HELPER FUNCTIONS --------------------------------------------------------------------------------------------------------------------------
@@ -508,6 +558,9 @@ func (t *SimpleChaincode) Invoke(stub shim.ChaincodeStubInterface, function stri
 	} else if function == "placeOrders" {
 		fmt.Printf("Function is placeOrders")
 		return t.placeOrders(stub, args)
+	} else if function == "mapAdspots" {
+		fmt.Printf("Function is mapAdspots")
+		return t.mapAdspots(stub, args)
 	}
 
 	return nil, errors.New("Received unknown function invocation")
