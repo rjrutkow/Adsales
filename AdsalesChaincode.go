@@ -550,14 +550,17 @@ func (t *SimpleChaincode) reportAsRun(stub shim.ChaincodeStubInterface, args []s
 					} else {
 						fmt.Println("Demographics not met! Setting WasAired to FAILED")
 						AdSpotObj.WasAired = "FAILED"
+						//LAUNCH AD RESCHEDULER
 					}
 				} else {
 					fmt.Println("Target GRP not met! Setting WasAired to FAILED")
 					AdSpotObj.WasAired = "FAILED"
+					//LAUNCH AD RESCHEDULER
 				}
 			} else {
 				fmt.Println("Program Name not met! Setting WasAired to FAILED")
 				AdSpotObj.WasAired = "FAILED"
+				//LAUNCH AD RESCHEDULER
 			}
 			t.putAdspot(stub, AdSpotObj)
 		}
