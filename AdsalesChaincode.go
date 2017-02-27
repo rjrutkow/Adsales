@@ -540,7 +540,7 @@ func (t *SimpleChaincode) reportAsRun(stub shim.ChaincodeStubInterface, args []s
 
 				// Basic "True-Up" Logic
 				if AdSpotObj.ActualProgramName == AdSpotObj.ProgramName {
-					if AdSpotObj.ActualGrp == AdSpotObj.TargetGrp {
+					if AdSpotObj.ActualGrp >= AdSpotObj.TargetGrp {
 						if AdSpotObj.ActualDemographics == AdSpotObj.TargetDemographics {
 							fmt.Println("All Contract Terms Met. Setting WasAired to YES")
 							AdSpotObj.WasAired = "YES"
