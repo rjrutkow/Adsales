@@ -166,14 +166,14 @@ type queryAsRunArray struct {
 }
 
 type reportAsRun struct {
-	UniqueAdspotId     string  `json:"uniqueAdspotId"`
-	WasAired           string  `json:"wasAired"`
-	AiredDate          string  `json:"airedDate"`
-	AiredTime          string  `json:"airedTime"`
-	ActualGrp          float64 `json:"actualGrp"`
-	ActualProgramName  string  `json:"actualProgramName"`
-	ActualDemographics string  `json:"actualDemographics"`
-	MakupAdspotId      string  `json:"makupAdspotId"`
+	UniqueAdspotId     string `json:"uniqueAdspotId"`
+	WasAired           string `json:"wasAired"`
+	AiredDate          string `json:"airedDate"`
+	AiredTime          string `json:"airedTime"`
+	ActualGrp          string `json:"actualGrp"`
+	ActualProgramName  string `json:"actualProgramName"`
+	ActualDemographics string `json:"actualDemographics"`
+	MakupAdspotId      string `json:"makupAdspotId"`
 }
 
 //For Debugging
@@ -534,35 +534,38 @@ func (t *SimpleChaincode) reportAsRun(stub shim.ChaincodeStubInterface, args []s
 				AdSpotObj.AiredTime = reportAsRunObj.AiredTime
 				AdSpotObj.AiredDate = reportAsRunObj.AiredDate
 				AdSpotObj.ActualProgramName = reportAsRunObj.ActualProgramName
-				AdSpotObj.ActualGrp = reportAsRunObj.ActualGrp
+				AdSpotObj.ActualGrp, _ = strconv.ParseFloat(reportAsRunObj.ActualGrp, 64)
 				AdSpotObj.ActualDemographics = reportAsRunObj.ActualDemographics
 				fmt.Printf("Unique Adspot Id Matched! Adspot Obj is:", AdSpotObj)
+				t.putAdspot(stub, AdSpotObj)
 			} else {
 				fmt.Println("Unique Adspot ID Mismatch in reportAsRun - need to re-evaluate logic")
 			}
 
-			// Basic "True-Up" Logic
-			if AdSpotObj.ActualProgramName == AdSpotObj.ProgramName {
-				if AdSpotObj.ActualGrp == AdSpotObj.TargetGrp {
-					if AdSpotObj.ActualDemographics == AdSpotObj.TargetDemographics {
-						fmt.Println("All Contract Terms Met. Setting WasAired to YES")
-						AdSpotObj.WasAired = "YES"
+			/*
+				// Basic "True-Up" Logic
+				if AdSpotObj.ActualProgramName == AdSpotObj.ProgramName {
+					if AdSpotObj.ActualGrp == AdSpotObj.TargetGrp {
+						if AdSpotObj.ActualDemographics == AdSpotObj.TargetDemographics {
+							fmt.Println("All Contract Terms Met. Setting WasAired to YES")
+							AdSpotObj.WasAired = "YES"
+						} else {
+							fmt.Println("Demographics not met! Setting WasAired to FAILED")
+							AdSpotObj.WasAired = "FAILED"
+							//LAUNCH AD RESCHEDULER
+						}
 					} else {
-						fmt.Println("Demographics not met! Setting WasAired to FAILED")
+						fmt.Println("Target GRP not met! Setting WasAired to FAILED")
 						AdSpotObj.WasAired = "FAILED"
 						//LAUNCH AD RESCHEDULER
 					}
 				} else {
-					fmt.Println("Target GRP not met! Setting WasAired to FAILED")
+					fmt.Println("Program Name not met! Setting WasAired to FAILED")
 					AdSpotObj.WasAired = "FAILED"
 					//LAUNCH AD RESCHEDULER
 				}
-			} else {
-				fmt.Println("Program Name not met! Setting WasAired to FAILED")
-				AdSpotObj.WasAired = "FAILED"
-				//LAUNCH AD RESCHEDULER
-			}
-			t.putAdspot(stub, AdSpotObj)
+			*/
+
 		}
 	}
 
