@@ -144,6 +144,38 @@ type mapAdspots struct {
 	CampaignName   string `json:"campaignName"`
 }
 
+type queryAsRunStruc struct {
+	UniqueAdspotId     string  `json:"uniqueAdspotId"`
+	AdContractId       int     `json:"adContractId"`
+	CampaignName       string  `json:"campaignName"`
+	CampaignId         string  `json:"campaignId"`
+	ProgramName        string  `json:"programName"`
+	TargetGrp          float64 `json:"targetGrp"`
+	TargetDemographics string  `json:"targetDemographics"`
+	WasAired           string  `json:"wasAired"`
+	AiredDate          string  `json:"airedDate"`
+	AiredTime          string  `json:"airedTime"`
+	ActualGrp          float64 `json:"actualGrp"`
+	ActualProgramName  string  `json:"actualProgramName"`
+	ActualDemographics string  `json:"actualDemographics"`
+	MakupAdspotId      string  `json:"makupAdspotId"`
+}
+
+type queryAsRunArray struct {
+	QueryAsRunData []queryAsRunStruc `json:"queryAsRunData"`
+}
+
+type reportAsRun struct {
+	UniqueAdspotId     string  `json:"uniqueAdspotId"`
+	WasAired           string  `json:"wasAired"`
+	AiredDate          string  `json:"airedDate"`
+	AiredTime          string  `json:"airedTime"`
+	ActualGrp          float64 `json:"actualGrp"`
+	ActualProgramName  string  `json:"actualProgramName"`
+	ActualDemographics string  `json:"actualDemographics"`
+	MakupAdspotId      string  `json:"makupAdspotId"`
+}
+
 //For Debugging
 func showArgs(args []string) {
 
@@ -386,7 +418,6 @@ func (t *SimpleChaincode) queryAdspotsToMap(stub shim.ChaincodeStubInterface, ar
 	return jsonAsBytes, nil
 }
 
-//////////////////////////////////////////////////////////////////////////////////////
 //STEP 3 Function - Map the Campaign Names to Adspots
 func (t *SimpleChaincode) mapAdspots(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 
@@ -421,11 +452,118 @@ func (t *SimpleChaincode) mapAdspots(stub shim.ChaincodeStubInterface, args []st
 			} else {
 				fmt.Println("Unique Adspot ID Mismatch in mapAdspots - need to re-evaluate logic")
 			}
-
 		}
+	}
+
+	fmt.Println("mapAdspots function completed")
+	return nil, nil
+}
+
+//STEP 4 Function - Query all the adspots to show run status
+func (t *SimpleChaincode) queryAsRun(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
+	fmt.Println("Launching queryAsRun Function")
+	broadcasterId := args[0]
+	var queryAsRunArrayObj queryAsRunArray
+
+	broadcasterAllAdspotsPointers, _ := t.getAllAdspotPointers(stub, broadcasterId)
+
+	for i := 0; i < len(broadcasterAllAdspotsPointers.UniqueAdspotId); i++ {
+		var queryAsRunStrucObj queryAsRunStruc
+		ThisAdspot, _ := t.getAdspot(stub, broadcasterAllAdspotsPointers.UniqueAdspotId[i])
+
+		queryAsRunStrucObj.UniqueAdspotId = ThisAdspot.UniqueAdspotId
+		queryAsRunStrucObj.ActualDemographics = ThisAdspot.ActualDemographics
+		queryAsRunStrucObj.ActualGrp = ThisAdspot.ActualGrp
+		queryAsRunStrucObj.ActualProgramName = ThisAdspot.ActualProgramName
+		queryAsRunStrucObj.AdContractId = ThisAdspot.AdContractId
+		queryAsRunStrucObj.AiredDate = ThisAdspot.AiredDate
+		queryAsRunStrucObj.AiredTime = ThisAdspot.AiredTime
+		queryAsRunStrucObj.CampaignId = ThisAdspot.CampaignId
+		queryAsRunStrucObj.CampaignName = ThisAdspot.CampaignName
+		queryAsRunStrucObj.MakupAdspotId = ThisAdspot.MakupAdspotId
+		queryAsRunStrucObj.ProgramName = ThisAdspot.ProgramName
+		queryAsRunStrucObj.TargetDemographics = ThisAdspot.TargetDemographics
+		queryAsRunStrucObj.TargetGrp = ThisAdspot.TargetGrp
+		queryAsRunStrucObj.WasAired = ThisAdspot.WasAired
+
+		queryAsRunArrayObj.QueryAsRunData = append(queryAsRunArrayObj.QueryAsRunData, queryAsRunStrucObj)
 
 	}
 
+	jsonAsBytes, err := json.Marshal(queryAsRunArrayObj)
+	if err != nil {
+		fmt.Println("Error returning json output for queryAsRun ")
+		return nil, err
+	}
+
+	fmt.Println("queryAsRun Function Complete")
+	fmt.Printf("queryAsRunObj: %+v ", queryAsRunArrayObj)
+	return jsonAsBytes, nil
+}
+
+//STEP 4 Function - Append As-Run report, "True-Up"" the adspot as run status
+func (t *SimpleChaincode) reportAsRun(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
+
+	fmt.Println("Running reportAsRun")
+	showArgs(args)
+
+	broadcasterId := args[0]
+
+	broadcasterAllAdspotsPointers, _ := t.getAllAdspotPointers(stub, broadcasterId)
+
+	//Loop through all the arguments
+	for i := 1; i < len(args); i++ {
+
+		in := args[i]
+		bytes := []byte(in)
+		var reportAsRunObj reportAsRun
+		err := json.Unmarshal(bytes, &reportAsRunObj)
+		if err != nil {
+			panic(err)
+		}
+		fmt.Printf("Report-as-run Object: %+v", reportAsRunObj)
+
+		// now look through the inventory of ad spots, find match
+		for j := 0; j < len(broadcasterAllAdspotsPointers.UniqueAdspotId); j++ {
+			uniqueAdspotKey := broadcasterAllAdspotsPointers.UniqueAdspotId[j]
+			AdSpotObj, _ := t.getAdspot(stub, uniqueAdspotKey)
+
+			if AdSpotObj.UniqueAdspotId == reportAsRunObj.UniqueAdspotId {
+				AdSpotObj.WasAired = reportAsRunObj.WasAired
+				AdSpotObj.MakupAdspotId = reportAsRunObj.MakupAdspotId
+				AdSpotObj.AiredTime = reportAsRunObj.AiredTime
+				AdSpotObj.AiredDate = reportAsRunObj.AiredDate
+				AdSpotObj.ActualProgramName = reportAsRunObj.ActualProgramName
+				AdSpotObj.ActualGrp = reportAsRunObj.ActualGrp
+				AdSpotObj.ActualDemographics = reportAsRunObj.ActualDemographics
+				fmt.Printf("Unique Adspot Id Matched! Adspot Obj is:", AdSpotObj)
+			} else {
+				fmt.Println("Unique Adspot ID Mismatch in reportAsRun - need to re-evaluate logic")
+			}
+
+			// Basic "True-Up" Logic
+			if AdSpotObj.ActualProgramName == AdSpotObj.ProgramName {
+				if AdSpotObj.ActualGrp == AdSpotObj.TargetGrp {
+					if AdSpotObj.ActualDemographics == AdSpotObj.TargetDemographics {
+						fmt.Println("All Contract Terms Met. Setting WasAired to YES")
+						AdSpotObj.WasAired = "YES"
+					} else {
+						fmt.Println("Demographics not met! Setting WasAired to FAILED")
+						AdSpotObj.WasAired = "FAILED"
+					}
+				} else {
+					fmt.Println("Target GRP not met! Setting WasAired to FAILED")
+					AdSpotObj.WasAired = "FAILED"
+				}
+			} else {
+				fmt.Println("Program Name not met! Setting WasAired to FAILED")
+				AdSpotObj.WasAired = "FAILED"
+			}
+			t.putAdspot(stub, AdSpotObj)
+		}
+	}
+
+	fmt.Println("reportAsRun function completed")
 	return nil, nil
 }
 
@@ -561,6 +699,9 @@ func (t *SimpleChaincode) Invoke(stub shim.ChaincodeStubInterface, function stri
 	} else if function == "mapAdspots" {
 		fmt.Printf("Function is mapAdspots")
 		return t.mapAdspots(stub, args)
+	} else if function == "reportAsRun" {
+		fmt.Printf("Function is reportAsRun")
+		return t.reportAsRun(stub, args)
 	}
 
 	return nil, errors.New("Received unknown function invocation")
@@ -578,6 +719,9 @@ func (t *SimpleChaincode) Query(stub shim.ChaincodeStubInterface, function strin
 	} else if function == "queryAdspotsToMap" {
 		fmt.Printf("Function is queryAdspotsToMap")
 		return t.queryAdspotsToMap(stub, args)
+	} else if function == "queryAsRun" {
+		fmt.Printf("Function is queryAsRun")
+		return t.queryAsRun(stub, args)
 	} else {
 		fmt.Printf("Invalid Function!")
 	}
