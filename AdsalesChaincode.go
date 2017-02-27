@@ -537,12 +537,7 @@ func (t *SimpleChaincode) reportAsRun(stub shim.ChaincodeStubInterface, args []s
 				AdSpotObj.ActualGrp, _ = strconv.ParseFloat(reportAsRunObj.ActualGrp, 64)
 				AdSpotObj.ActualDemographics = reportAsRunObj.ActualDemographics
 				fmt.Printf("Unique Adspot Id Matched! Adspot Obj is:", AdSpotObj)
-				t.putAdspot(stub, AdSpotObj)
-			} else {
-				fmt.Println("Unique Adspot ID Mismatch in reportAsRun - need to re-evaluate logic")
-			}
 
-			/*
 				// Basic "True-Up" Logic
 				if AdSpotObj.ActualProgramName == AdSpotObj.ProgramName {
 					if AdSpotObj.ActualGrp == AdSpotObj.TargetGrp {
@@ -564,8 +559,11 @@ func (t *SimpleChaincode) reportAsRun(stub shim.ChaincodeStubInterface, args []s
 					AdSpotObj.WasAired = "FAILED"
 					//LAUNCH AD RESCHEDULER
 				}
-			*/
 
+				t.putAdspot(stub, AdSpotObj)
+			} else {
+				fmt.Println("Unique Adspot ID Mismatch in reportAsRun - need to re-evaluate logic")
+			}
 		}
 	}
 
