@@ -522,6 +522,9 @@ func (t *SimpleChaincode) Query(stub shim.ChaincodeStubInterface, function strin
 	if function == "queryPlaceOrders" {
 		fmt.Printf("Function is queryPlaceOrders")
 		return t.queryPlaceOrders(stub, args)
+	} else if function == "queryAdspotsToMap" {
+		fmt.Printf("Function is queryAdspotsToMap")
+		return t.queryAdspotsToMap(stub, args)
 	} else {
 		fmt.Printf("Invalid Function!")
 	}
