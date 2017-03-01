@@ -176,6 +176,10 @@ type reportAsRun struct {
 	MakupAdspotId      string `json:"makupAdspotId"`
 }
 
+type queryTraceAdSpotStruct struct {
+	AdspotDataArray []adspot `json:"adspotDataArray"`
+}
+
 //For Debugging
 func showArgs(args []string) {
 
@@ -569,6 +573,42 @@ func (t *SimpleChaincode) reportAsRun(stub shim.ChaincodeStubInterface, args []s
 
 	fmt.Println("reportAsRun function completed")
 	return nil, nil
+}
+
+//STEP 5 Function - Trace a unique adspot
+//SIMILAR TO GET ALL ADSPOTS???
+func (t *SimpleChaincode) queryTraceAdSpot(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
+
+	fmt.Println("Launching queryTraceAdSpot")
+	userId := args[0]
+	fmt.Printf("Getting All Adspots for: " + userId)
+	var adspotResultsArray []adspot
+	allAdspotsPointers, _ := t.getAllAdspotPointers(stub, userId)
+
+	for j := 0; j < len(allAdspotsPointers.UniqueAdspotId); j++ {
+		ThisAdspot, _ := t.getAdspot(stub, allAdspotsPointers.UniqueAdspotId[j])
+
+		adspotResultsArray = append(adspotResultsArray, ThisAdspot)
+
+		if ThisAdspot.MakupAdspotId != noData {
+
+			ThisMakeupAdspotId := ThisAdspot.MakupAdspotId
+			ThisMakeupAdspot, _ := t.getAdspot(stub, ThisMakeupAdspotId)
+			adspotResultsArray = append(adspotResultsArray, ThisMakeupAdspot)
+		}
+
+	}
+
+	jsonAsBytes, err := json.Marshal(adspotResultsArray)
+	if err != nil {
+		fmt.Println("Error returning json output for queryTraceAdSpot ")
+		return nil, err
+	}
+
+	fmt.Println("queryTraceAdSpot Function Complete")
+	fmt.Printf("results: %+v ", adspotResultsArray)
+	return jsonAsBytes, nil
+
 }
 
 //HELPER FUNCTIONS --------------------------------------------------------------------------------------------------------------------------
