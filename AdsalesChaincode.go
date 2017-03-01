@@ -176,10 +176,6 @@ type reportAsRun struct {
 	MakupAdspotId      string `json:"makupAdspotId"`
 }
 
-type queryTraceAdSpotStruct struct {
-	AdspotDataArray []adspot `json:"adspotDataArray"`
-}
-
 //For Debugging
 func showArgs(args []string) {
 
@@ -577,7 +573,7 @@ func (t *SimpleChaincode) reportAsRun(stub shim.ChaincodeStubInterface, args []s
 
 //STEP 5 Function - Trace a unique adspot
 //SIMILAR TO GET ALL ADSPOTS???
-func (t *SimpleChaincode) queryTraceAdSpot(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
+func (t *SimpleChaincode) queryTraceAdSpots(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 
 	fmt.Println("Launching queryTraceAdSpot")
 	userId := args[0]
@@ -596,7 +592,6 @@ func (t *SimpleChaincode) queryTraceAdSpot(stub shim.ChaincodeStubInterface, arg
 			ThisMakeupAdspot, _ := t.getAdspot(stub, ThisMakeupAdspotId)
 			adspotResultsArray = append(adspotResultsArray, ThisMakeupAdspot)
 		}
-
 	}
 
 	jsonAsBytes, err := json.Marshal(adspotResultsArray)
