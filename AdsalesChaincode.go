@@ -761,9 +761,9 @@ func (t *SimpleChaincode) Query(stub shim.ChaincodeStubInterface, function strin
 	} else if function == "queryAsRun" {
 		fmt.Printf("Function is queryAsRun")
 		return t.queryAsRun(stub, args)
-	} else if function == "queryAsRun" {
-		fmt.Printf("Function is queryAsRun")
-		return t.queryAsRun(stub, args)
+	} else if function == "queryTraceAdSpots" {
+		fmt.Printf("Function is queryTraceAdSpots")
+		return t.queryTraceAdSpots(stub, args)
 	} else {
 		fmt.Printf("Invalid Function!")
 	}
