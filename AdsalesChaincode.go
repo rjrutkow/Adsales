@@ -738,9 +738,9 @@ func (t *SimpleChaincode) Invoke(stub shim.ChaincodeStubInterface, function stri
 	} else if function == "mapAdspots" {
 		fmt.Printf("Function is mapAdspots")
 		return t.mapAdspots(stub, args)
-	} else if function == "reportAsRun" {
-		fmt.Printf("Function is reportAsRun")
-		return t.reportAsRun(stub, args)
+	} else if function == "queryTraceAdSpots" {
+		fmt.Printf("Function is queryTraceAdSpots")
+		return t.queryTraceAdSpots(stub, args)
 	}
 
 	return nil, errors.New("Received unknown function invocation")
@@ -758,6 +758,9 @@ func (t *SimpleChaincode) Query(stub shim.ChaincodeStubInterface, function strin
 	} else if function == "queryAdspotsToMap" {
 		fmt.Printf("Function is queryAdspotsToMap")
 		return t.queryAdspotsToMap(stub, args)
+	} else if function == "queryAsRun" {
+		fmt.Printf("Function is queryAsRun")
+		return t.queryAsRun(stub, args)
 	} else if function == "queryAsRun" {
 		fmt.Printf("Function is queryAsRun")
 		return t.queryAsRun(stub, args)
