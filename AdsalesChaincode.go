@@ -328,7 +328,7 @@ func (t *SimpleChaincode) placeOrders(stub shim.ChaincodeStubInterface, args []s
 					AdSpotObj.OrderNumber, _ = strconv.Atoi(placeOrdersObj.OrderNumber)
 
 					//Create Timestamp based on current Time
-					var placeOrderDate time.Time = time.Now().AddDate(0, 0, 3)
+					var placeOrderDate time.Time = time.Now().AddDate(0, 0, 2)
 					placeOrderDateStr := placeOrderDate.Format(time.RFC822)
 					AdSpotObj.OrderDate, _ = time.Parse(time.RFC822, placeOrderDateStr)
 
@@ -462,7 +462,7 @@ func (t *SimpleChaincode) mapAdspots(stub shim.ChaincodeStubInterface, args []st
 				AdSpotObj.CampaignName = mapAdspotsObj.CampaignName
 
 				//Create Timestamp based on current Time
-				var adAssignedDate time.Time = time.Now().AddDate(0, 0, 1)
+				var adAssignedDate time.Time = time.Now().AddDate(0, 0, 4)
 				adAssignedStr := adAssignedDate.Format(time.RFC822)
 				AdSpotObj.AdAssignedDate, _ = time.Parse(time.RFC822, adAssignedStr)
 
@@ -552,7 +552,7 @@ func (t *SimpleChaincode) reportAsRun(stub shim.ChaincodeStubInterface, args []s
 				AdSpotObj.MakupAdspotId = reportAsRunObj.MakupAdspotId
 
 				//Create Timestamp based on current Time
-				var airedDate time.Time = time.Now().AddDate(0, 0, 5)
+				var airedDate time.Time = time.Now().AddDate(0, 0, 7)
 				airedDateStr := airedDate.Format(time.RFC822)
 				AdSpotObj.AiredDate, _ = time.Parse(time.RFC822, airedDateStr)
 
