@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
+	"time"
 
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 )
@@ -14,6 +15,7 @@ import (
 //These are defined Constants for use throughout the gocode
 const noData string = "NA" //Defalt for empty string values
 const noValue int = -1     //Default for empty numerical values
+const noTime string = "11 May 16 12:00 UTC"
 
 //STRUCTURES --------------------------------------------------------------------------------------------------------------------------
 // SimpleChaincode required structure
@@ -22,30 +24,30 @@ type SimpleChaincode struct {
 
 // This is our primary structure for Adspots, based on columns defined within the ledger template.
 type adspot struct {
-	UniqueAdspotId     string  `json:"uniqueAdspotId"`
-	LotId              int     `json:"lotId"`
-	AdspotId           int     `json:"adspotId"`
-	InventoryDate      string  `json:"inventoryDate"`
-	ProgramName        string  `json:"programName"`
-	SeasonEpisode      string  `json:"seasonEpisode"`
-	BroadcasterId      string  `json:"broadcasterId"`
-	Genre              string  `json:"genre"`
-	DayPart            string  `json:"dayPart"`
-	TargetGrp          float64 `json:"targetGrp"`
-	TargetDemographics string  `json:"targetDemographics"`
-	InitialCpm         float64 `json:"initialCpm"`
-	Bsrp               float64 `json:"bsrp"`
-	OrderDate          string  `json:"orderDate"`
-	AdAgencyId         string  `json:"adAgencyId"`
-	OrderNumber        int     `json:"orderNumber"`
-	AdvertiserId       string  `json:"advertiserId"`
-	AdContractId       int     `json:"adContractId"`
-	AdAssignedDate     string  `json:"adAssignedDate"`
-	CampaignName       string  `json:"campaignName"`
-	CampaignId         string  `json:"campaignId"`
-	WasAired           string  `json:"wasAired"`
-	AiredDate          string  `json:"airedDate"`
-	AiredTime          string  `json:"airedTime"`
+	UniqueAdspotId     string    `json:"uniqueAdspotId"`
+	LotId              int       `json:"lotId"`
+	AdspotId           int       `json:"adspotId"`
+	InventoryDate      time.Time `json:"inventoryDate"`
+	ProgramName        string    `json:"programName"`
+	SeasonEpisode      string    `json:"seasonEpisode"`
+	BroadcasterId      string    `json:"broadcasterId"`
+	Genre              string    `json:"genre"`
+	DayPart            string    `json:"dayPart"`
+	TargetGrp          float64   `json:"targetGrp"`
+	TargetDemographics string    `json:"targetDemographics"`
+	InitialCpm         float64   `json:"initialCpm"`
+	Bsrp               float64   `json:"bsrp"`
+	OrderDate          time.Time `json:"orderDate"`
+	AdAgencyId         string    `json:"adAgencyId"`
+	OrderNumber        int       `json:"orderNumber"`
+	AdvertiserId       string    `json:"advertiserId"`
+	AdContractId       int       `json:"adContractId"`
+	AdAssignedDate     time.Time `json:"adAssignedDate"`
+	CampaignName       string    `json:"campaignName"`
+	CampaignId         string    `json:"campaignId"`
+	WasAired           string    `json:"wasAired"`
+	AiredDate          time.Time `json:"airedDate"`
+	//AiredTime          string    `json:"airedTime"`
 	ActualGrp          float64 `json:"actualGrp"`
 	ActualProgramName  string  `json:"actualProgramName"`
 	ActualDemographics string  `json:"actualDemographics"`
@@ -145,16 +147,16 @@ type mapAdspots struct {
 }
 
 type queryAsRunStruc struct {
-	UniqueAdspotId     string  `json:"uniqueAdspotId"`
-	AdContractId       int     `json:"adContractId"`
-	CampaignName       string  `json:"campaignName"`
-	CampaignId         string  `json:"campaignId"`
-	ProgramName        string  `json:"programName"`
-	TargetGrp          float64 `json:"targetGrp"`
-	TargetDemographics string  `json:"targetDemographics"`
-	WasAired           string  `json:"wasAired"`
-	AiredDate          string  `json:"airedDate"`
-	AiredTime          string  `json:"airedTime"`
+	UniqueAdspotId     string    `json:"uniqueAdspotId"`
+	AdContractId       int       `json:"adContractId"`
+	CampaignName       string    `json:"campaignName"`
+	CampaignId         string    `json:"campaignId"`
+	ProgramName        string    `json:"programName"`
+	TargetGrp          float64   `json:"targetGrp"`
+	TargetDemographics string    `json:"targetDemographics"`
+	WasAired           string    `json:"wasAired"`
+	AiredDate          time.Time `json:"airedDate"`
+	//AiredTime          string  `json:"airedTime"`
 	ActualGrp          float64 `json:"actualGrp"`
 	ActualProgramName  string  `json:"actualProgramName"`
 	ActualDemographics string  `json:"actualDemographics"`
@@ -225,28 +227,31 @@ func (t *SimpleChaincode) releaseInventory(stub shim.ChaincodeStubInterface, arg
 			ThisAdspot.UniqueAdspotId = (releaseInventoryObj.LotId + "_" + strconv.Itoa(increment))
 			ThisAdspot.LotId, _ = strconv.Atoi(releaseInventoryObj.LotId)
 			ThisAdspot.AdspotId, _ = strconv.Atoi(releaseInventoryObj.AdspotId)
-			ThisAdspot.InventoryDate = releaseInventoryObj.InventoryDate
+
+			//Get Current Time
+			currentDateStr := time.Now().Format(time.RFC822)
+			ThisAdspot.InventoryDate, _ = time.Parse(time.RFC822, currentDateStr)
+
 			ThisAdspot.ProgramName = releaseInventoryObj.ProgramName
 			ThisAdspot.SeasonEpisode = releaseInventoryObj.SeasonEpisode
 			ThisAdspot.BroadcasterId = broadcasterID
 			ThisAdspot.Genre = releaseInventoryObj.Genre
 			ThisAdspot.DayPart = releaseInventoryObj.DayPart
-
 			ThisAdspot.TargetGrp, _ = strconv.ParseFloat(releaseInventoryObj.TargetGrp, 64)
 			ThisAdspot.TargetDemographics = releaseInventoryObj.TargetDemographics
 			ThisAdspot.InitialCpm, _ = strconv.ParseFloat(releaseInventoryObj.InitialCpm, 64)
 			ThisAdspot.Bsrp, _ = strconv.ParseFloat(releaseInventoryObj.Bsrp, 64)
-			ThisAdspot.OrderDate = noData
+			ThisAdspot.OrderDate, _ = time.Parse(time.RFC822, currentDateStr)
 			ThisAdspot.AdAgencyId = noData
 			ThisAdspot.OrderNumber = noValue
 			ThisAdspot.AdvertiserId = noData
 			ThisAdspot.AdContractId = noValue
-			ThisAdspot.AdAssignedDate = noData
+			ThisAdspot.AdAssignedDate, _ = time.Parse(time.RFC822, currentDateStr)
 			ThisAdspot.CampaignName = noData
 			ThisAdspot.CampaignId = noData
 			ThisAdspot.WasAired = noData
-			ThisAdspot.AiredDate = noData
-			ThisAdspot.AiredTime = noData
+			ThisAdspot.AiredDate, _ = time.Parse(time.RFC822, currentDateStr)
+			//ThisAdspot.AiredTime = noData
 			ThisAdspot.ActualGrp = float64(noValue)
 			ThisAdspot.ActualProgramName = noData
 			ThisAdspot.ActualDemographics = noData
@@ -321,6 +326,11 @@ func (t *SimpleChaincode) placeOrders(stub shim.ChaincodeStubInterface, args []s
 					AdSpotObj.AdvertiserId = placeOrdersObj.AdvertiserId
 					AdSpotObj.AdContractId, _ = strconv.Atoi(placeOrdersObj.AdContractId)
 					AdSpotObj.OrderNumber, _ = strconv.Atoi(placeOrdersObj.OrderNumber)
+
+					//Create Timestamp based on current Time
+					var placeOrderDate time.Time = time.Now().AddDate(0, 0, 3)
+					placeOrderDateStr := placeOrderDate.Format(time.RFC822)
+					AdSpotObj.OrderDate, _ = time.Parse(time.RFC822, placeOrderDateStr)
 
 					t.putAdspot(stub, AdSpotObj)
 
@@ -450,6 +460,12 @@ func (t *SimpleChaincode) mapAdspots(stub shim.ChaincodeStubInterface, args []st
 
 			if AdSpotObj.UniqueAdspotId == mapAdspotsObj.UniqueAdspotId {
 				AdSpotObj.CampaignName = mapAdspotsObj.CampaignName
+
+				//Create Timestamp based on current Time
+				var adAssignedDate time.Time = time.Now().AddDate(0, 0, 1)
+				adAssignedStr := adAssignedDate.Format(time.RFC822)
+				AdSpotObj.AdAssignedDate, _ = time.Parse(time.RFC822, adAssignedStr)
+
 				fmt.Printf("Unique Adspot Id Matched! Adspot Obj is:", AdSpotObj)
 				t.putAdspot(stub, AdSpotObj)
 			} else {
@@ -480,7 +496,7 @@ func (t *SimpleChaincode) queryAsRun(stub shim.ChaincodeStubInterface, args []st
 		queryAsRunStrucObj.ActualProgramName = ThisAdspot.ActualProgramName
 		queryAsRunStrucObj.AdContractId = ThisAdspot.AdContractId
 		queryAsRunStrucObj.AiredDate = ThisAdspot.AiredDate
-		queryAsRunStrucObj.AiredTime = ThisAdspot.AiredTime
+		//queryAsRunStrucObj.AiredTime = ThisAdspot.AiredTime
 		queryAsRunStrucObj.CampaignId = ThisAdspot.CampaignId
 		queryAsRunStrucObj.CampaignName = ThisAdspot.CampaignName
 		queryAsRunStrucObj.MakupAdspotId = ThisAdspot.MakupAdspotId
@@ -534,8 +550,12 @@ func (t *SimpleChaincode) reportAsRun(stub shim.ChaincodeStubInterface, args []s
 			if AdSpotObj.UniqueAdspotId == reportAsRunObj.UniqueAdspotId {
 				AdSpotObj.WasAired = reportAsRunObj.WasAired
 				AdSpotObj.MakupAdspotId = reportAsRunObj.MakupAdspotId
-				AdSpotObj.AiredTime = reportAsRunObj.AiredTime
-				AdSpotObj.AiredDate = reportAsRunObj.AiredDate
+
+				//Create Timestamp based on current Time
+				var airedDate time.Time = time.Now().AddDate(0, 0, 5)
+				airedDateStr := airedDate.Format(time.RFC822)
+				AdSpotObj.AiredDate, _ = time.Parse(time.RFC822, airedDateStr)
+
 				AdSpotObj.ActualProgramName = reportAsRunObj.ActualProgramName
 				AdSpotObj.ActualGrp, _ = strconv.ParseFloat(reportAsRunObj.ActualGrp, 64)
 				AdSpotObj.ActualDemographics = reportAsRunObj.ActualDemographics
