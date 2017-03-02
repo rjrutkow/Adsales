@@ -190,6 +190,9 @@ func showArgs(args []string) {
 //STEP 1 Function - Replease Broadcaster's Inventory
 func (t *SimpleChaincode) releaseInventory(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 
+	fmt.Println("Restting Demo....")
+	t.reInitAllPointers(stub)
+
 	fmt.Println("Running releaseInventory")
 
 	var broadcasterID = args[0]
@@ -695,6 +698,26 @@ func (t *SimpleChaincode) putAllAdspotPointers(stub shim.ChaincodeStubInterface,
 		fmt.Println("Success - Marshall in putAllAdspotPointers")
 	}
 	fmt.Println("putAllAdspotPointers Function Complete - userid: ", userId)
+	return nil, nil
+}
+
+func (t *SimpleChaincode) reInitAllPointers(stub shim.ChaincodeStubInterface) ([]byte, error) {
+	fmt.Println("launching resetAllPointers function")
+
+	broadcasterId := "BroadcasterA"
+	agencyId := "AgencyA"
+	advertiser1Id := "AdvertiserA"
+	advertiser2Id := "AdvertiserB"
+
+	//Create array for all adspots in ledger
+	var AllAdspotsArray AllAdspots
+
+	t.putAllAdspotPointers(stub, AllAdspotsArray, broadcasterId)
+	t.putAllAdspotPointers(stub, AllAdspotsArray, agencyId)
+	t.putAllAdspotPointers(stub, AllAdspotsArray, advertiser1Id)
+	t.putAllAdspotPointers(stub, AllAdspotsArray, advertiser2Id)
+
+	fmt.Println("Demo Reset Complete")
 	return nil, nil
 }
 
