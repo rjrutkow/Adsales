@@ -392,22 +392,17 @@ func (t *SimpleChaincode) queryPlaceOrders(stub shim.ChaincodeStubInterface, arg
 	fmt.Println("Launching queryPlaceOrders Function")
 	broadcasterId := args[1]
 	var queryPlaceOrdersArrayObj queryPlaceOrdersArray
-
 	broadcasterAllAdspotsPointers, _ := t.getAllAdspotPointers(stub, broadcasterId)
-
-	var numberOfSpotsCounter = 0
 
 	for i := 0; i < len(broadcasterAllAdspotsPointers.UniqueAdspotId); i++ {
 		var queryPlaceOrdersStrucObj queryPlaceOrdersStruc
-		numberOfSpotsCounter++
-
 		ThisAdspot, _ := t.getAdspot(stub, broadcasterAllAdspotsPointers.UniqueAdspotId[i])
 
 		var currentAdspotId = -1
 
 		if ThisAdspot.AdspotId != currentAdspotId {
-			currentAdspotId = ThisAdspot.AdspotId
 			if ThisAdspot.AdContractId == noValue {
+				currentAdspotId = ThisAdspot.AdspotId
 				queryPlaceOrdersStrucObj.AdspotId = ThisAdspot.AdspotId
 				queryPlaceOrdersStrucObj.BroadcasterId = ThisAdspot.BroadcasterId
 				queryPlaceOrdersStrucObj.Bsrp = ThisAdspot.Bsrp
@@ -418,8 +413,12 @@ func (t *SimpleChaincode) queryPlaceOrders(stub shim.ChaincodeStubInterface, arg
 				queryPlaceOrdersStrucObj.ProgramName = ThisAdspot.ProgramName
 				queryPlaceOrdersStrucObj.TargetDemographics = ThisAdspot.TargetDemographics
 				queryPlaceOrdersStrucObj.TargetGrp = ThisAdspot.TargetGrp
-				queryPlaceOrdersStrucObj.NumberOfSpots = numberOfSpotsCounter
+				queryPlaceOrdersStrucObj.NumberOfSpots = 1
 				queryPlaceOrdersArrayObj.PlacedOrderData = append(queryPlaceOrdersArrayObj.PlacedOrderData, queryPlaceOrdersStrucObj)
+			}
+		} else {
+			if ThisAdspot.AdContractId == noValue {
+				queryPlaceOrdersStrucObj.NumberOfSpots++
 			}
 		}
 
