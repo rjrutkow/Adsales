@@ -255,7 +255,7 @@ func (t *SimpleChaincode) releaseInventory(stub shim.ChaincodeStubInterface, arg
 		for x := 0; x < NumberOfSpots; x++ {
 			var ThisAdspot adspot
 
-			ThisAdspot.UniqueAdspotId = (releaseInventoryObj.LotId + "_" + strconv.Itoa(increment))
+			ThisAdspot.UniqueAdspotId = (thisLotId + "_" + strconv.Itoa(increment))
 			ThisAdspot.LotId, _ = strconv.Atoi(thisLotId)
 			ThisAdspot.AdspotId, _ = strconv.Atoi(releaseInventoryObj.AdspotId)
 
@@ -395,12 +395,12 @@ func (t *SimpleChaincode) queryPlaceOrders(stub shim.ChaincodeStubInterface, arg
 	broadcasterId := args[1]
 	var queryPlaceOrdersArrayObj queryPlaceOrdersArray
 	broadcasterAllAdspotsPointers, _ := t.getAllAdspotPointers(stub, broadcasterId)
+	var currentAdspotId = -1
 
-	for i := 0; i < len(broadcasterAllAdspotsPointers.UniqueAdspotId); i++ {
+	i := 0
+	for i < len(broadcasterAllAdspotsPointers.UniqueAdspotId) {
 		var queryPlaceOrdersStrucObj queryPlaceOrdersStruc
 		ThisAdspot, _ := t.getAdspot(stub, broadcasterAllAdspotsPointers.UniqueAdspotId[i])
-
-		var currentAdspotId = -1
 
 		if ThisAdspot.AdspotId != currentAdspotId {
 			if ThisAdspot.AdContractId == noValue {
@@ -416,16 +416,35 @@ func (t *SimpleChaincode) queryPlaceOrders(stub shim.ChaincodeStubInterface, arg
 				queryPlaceOrdersStrucObj.TargetDemographics = ThisAdspot.TargetDemographics
 				queryPlaceOrdersStrucObj.TargetGrp = ThisAdspot.TargetGrp
 				queryPlaceOrdersStrucObj.NumberOfSpots = 1
-				queryPlaceOrdersArrayObj.PlacedOrderData = append(queryPlaceOrdersArrayObj.PlacedOrderData, queryPlaceOrdersStrucObj)
-			}
-		} else {
-			if ThisAdspot.AdContractId == noValue {
-				queryPlaceOrdersStrucObj.NumberOfSpots++
-			}
-		}
 
+				addedToArray := false
+
+				for j := (i + 1); j < len(broadcasterAllAdspotsPointers.UniqueAdspotId); j++ {
+					NextAdspot, _ := t.getAdspot(stub, broadcasterAllAdspotsPointers.UniqueAdspotId[j])
+					addedToArray = false
+					if NextAdspot.AdspotId == currentAdspotId { /// if next row of data same ad spot id and
+						if NextAdspot.AdContractId == noValue { // if ad spot is available for purchase, count it
+							fmt.Printf("*** Found dupilcate for show: %v \n", ThisAdspot.ProgramName)
+							queryPlaceOrdersStrucObj.NumberOfSpots++
+						}
+					} else {
+						addedToArray = true
+						queryPlaceOrdersArrayObj.PlacedOrderData = append(queryPlaceOrdersArrayObj.PlacedOrderData, queryPlaceOrdersStrucObj)
+						i = (j - 1)
+						fmt.Printf("*********** setting i to: %v \n", i)
+						break
+					}
+				} // for
+
+				if !addedToArray {
+					queryPlaceOrdersArrayObj.PlacedOrderData = append(queryPlaceOrdersArrayObj.PlacedOrderData, queryPlaceOrdersStrucObj)
+				}
+			} // if
+		} // if
+		i++
 	}
 
+	fmt.Printf("*** object to return: %v \n ", queryPlaceOrdersArrayObj)
 	jsonAsBytes, err := json.Marshal(queryPlaceOrdersArrayObj)
 	if err != nil {
 		fmt.Println("Error returning json output for queryPlaceOrders ")
