@@ -47,11 +47,10 @@ type adspot struct {
 	CampaignId         string    `json:"campaignId"`
 	WasAired           string    `json:"wasAired"`
 	AiredDate          time.Time `json:"airedDate"`
-	//AiredTime          string    `json:"airedTime"`
-	ActualGrp          float64 `json:"actualGrp"`
-	ActualProgramName  string  `json:"actualProgramName"`
-	ActualDemographics string  `json:"actualDemographics"`
-	MakupAdspotId      string  `json:"makupAdspotId"`
+	ActualGrp          float64   `json:"actualGrp"`
+	ActualProgramName  string    `json:"actualProgramName"`
+	ActualDemographics string    `json:"actualDemographics"`
+	MakupAdspotId      string    `json:"makupAdspotId"`
 }
 
 //This is a helper structure for releasing Adspots (STEP 1)
@@ -69,8 +68,6 @@ type releaseInventory struct {
 	InitialCpm         string `json:"initialCpm"`
 	Bsrp               string `json:"bsrp"`
 	NumberOfSpots      string `json:"numberofSpots"`
-	//releaseDate - do we need this?
-	//UniqueAdspotID - to we need this?
 }
 
 // This is a helper structure for querying placed orders (STEP 2)
@@ -157,11 +154,10 @@ type queryAsRunStruc struct {
 	TargetDemographics string    `json:"targetDemographics"`
 	WasAired           string    `json:"wasAired"`
 	AiredDate          time.Time `json:"airedDate"`
-	//AiredTime          string  `json:"airedTime"`
-	ActualGrp          float64 `json:"actualGrp"`
-	ActualProgramName  string  `json:"actualProgramName"`
-	ActualDemographics string  `json:"actualDemographics"`
-	MakupAdspotId      string  `json:"makupAdspotId"`
+	ActualGrp          float64   `json:"actualGrp"`
+	ActualProgramName  string    `json:"actualProgramName"`
+	ActualDemographics string    `json:"actualDemographics"`
+	MakupAdspotId      string    `json:"makupAdspotId"`
 }
 
 type queryAsRunArray struct {
@@ -177,6 +173,37 @@ type reportAsRun struct {
 	ActualProgramName  string `json:"actualProgramName"`
 	ActualDemographics string `json:"actualDemographics"`
 	MakupAdspotId      string `json:"makupAdspotId"`
+}
+
+type queryTraceAdSpotsResturnStruct struct {
+	UniqueAdspotId     string    `json:"uniqueAdspotId"`
+	LotId              int       `json:"lotId"`
+	AdspotId           int       `json:"adspotId"`
+	InventoryDate      time.Time `json:"inventoryDate"`
+	ProgramName        string    `json:"programName"`
+	SeasonEpisode      string    `json:"seasonEpisode"`
+	BroadcasterId      string    `json:"broadcasterId"`
+	Genre              string    `json:"genre"`
+	DayPart            string    `json:"dayPart"`
+	TargetGrp          float64   `json:"targetGrp"`
+	TargetDemographics string    `json:"targetDemographics"`
+	InitialCpm         float64   `json:"initialCpm"`
+	Bsrp               float64   `json:"bsrp"`
+	OrderDate          time.Time `json:"orderDate"`
+	AdAgencyId         string    `json:"adAgencyId"`
+	OrderNumber        int       `json:"orderNumber"`
+	AdvertiserId       string    `json:"advertiserId"`
+	AdContractId       int       `json:"adContractId"`
+	AdAssignedDate     time.Time `json:"adAssignedDate"`
+	CampaignName       string    `json:"campaignName"`
+	CampaignId         string    `json:"campaignId"`
+	WasAired           string    `json:"wasAired"`
+	AiredDate          time.Time `json:"airedDate"`
+	ActualGrp          float64   `json:"actualGrp"`
+	ActualProgramName  string    `json:"actualProgramName"`
+	ActualDemographics string    `json:"actualDemographics"`
+	MakupAdspotId      string    `json:"makupAdspotId"`
+	MakeupAdspotData   adspot    `json:"makupAdspotData"`
 }
 
 //For Debugging
@@ -614,20 +641,51 @@ func (t *SimpleChaincode) queryTraceAdSpots(stub shim.ChaincodeStubInterface, ar
 	fmt.Println("Launching queryTraceAdSpot")
 	userId := args[0]
 	fmt.Printf("Getting All Adspots for: " + userId)
-	var adspotResultsArray []adspot
+
+	var adspotResultsArray []queryTraceAdSpotsResturnStruct
+
 	allAdspotsPointers, _ := t.getAllAdspotPointers(stub, userId)
 
 	for j := 0; j < len(allAdspotsPointers.UniqueAdspotId); j++ {
 		ThisAdspot, _ := t.getAdspot(stub, allAdspotsPointers.UniqueAdspotId[j])
 
-		adspotResultsArray = append(adspotResultsArray, ThisAdspot)
+		var ThisQueryTraceAdspotsReturnStruct queryTraceAdSpotsResturnStruct
+
+		ThisQueryTraceAdspotsReturnStruct.ActualDemographics = ThisAdspot.ActualDemographics
+		ThisQueryTraceAdspotsReturnStruct.ActualGrp = ThisAdspot.ActualGrp
+		ThisQueryTraceAdspotsReturnStruct.ActualProgramName = ThisAdspot.ActualProgramName
+		ThisQueryTraceAdspotsReturnStruct.AdAgencyId = ThisAdspot.AdAgencyId
+		ThisQueryTraceAdspotsReturnStruct.AdAssignedDate = ThisAdspot.AdAssignedDate
+		ThisQueryTraceAdspotsReturnStruct.AdContractId = ThisAdspot.AdContractId
+		ThisQueryTraceAdspotsReturnStruct.AdspotId = ThisAdspot.AdspotId
+		ThisQueryTraceAdspotsReturnStruct.AdvertiserId = ThisAdspot.AdvertiserId
+		ThisQueryTraceAdspotsReturnStruct.AiredDate = ThisAdspot.AiredDate
+		ThisQueryTraceAdspotsReturnStruct.BroadcasterId = ThisAdspot.BroadcasterId
+		ThisQueryTraceAdspotsReturnStruct.Bsrp = ThisAdspot.Bsrp
+		ThisQueryTraceAdspotsReturnStruct.CampaignId = ThisAdspot.CampaignId
+		ThisQueryTraceAdspotsReturnStruct.CampaignName = ThisAdspot.CampaignName
+		ThisQueryTraceAdspotsReturnStruct.DayPart = ThisAdspot.DayPart
+		ThisQueryTraceAdspotsReturnStruct.Genre = ThisAdspot.Genre
+		ThisQueryTraceAdspotsReturnStruct.InitialCpm = ThisAdspot.InitialCpm
+		ThisQueryTraceAdspotsReturnStruct.InventoryDate = ThisAdspot.InventoryDate
+		ThisQueryTraceAdspotsReturnStruct.LotId = ThisAdspot.LotId
+		ThisQueryTraceAdspotsReturnStruct.MakupAdspotId = ThisAdspot.MakupAdspotId
+		ThisQueryTraceAdspotsReturnStruct.OrderDate = ThisAdspot.OrderDate
+		ThisQueryTraceAdspotsReturnStruct.OrderNumber = ThisAdspot.OrderNumber
+		ThisQueryTraceAdspotsReturnStruct.ProgramName = ThisAdspot.ProgramName
+		ThisQueryTraceAdspotsReturnStruct.SeasonEpisode = ThisAdspot.SeasonEpisode
+		ThisQueryTraceAdspotsReturnStruct.TargetDemographics = ThisAdspot.TargetDemographics
+		ThisQueryTraceAdspotsReturnStruct.TargetGrp = ThisAdspot.TargetGrp
+		ThisQueryTraceAdspotsReturnStruct.UniqueAdspotId = ThisAdspot.UniqueAdspotId
+		ThisQueryTraceAdspotsReturnStruct.WasAired = ThisAdspot.WasAired
 
 		if ThisAdspot.MakupAdspotId != noData {
-
 			ThisMakeupAdspotId := ThisAdspot.MakupAdspotId
 			ThisMakeupAdspot, _ := t.getAdspot(stub, ThisMakeupAdspotId)
-			adspotResultsArray = append(adspotResultsArray, ThisMakeupAdspot)
+			ThisQueryTraceAdspotsReturnStruct.MakeupAdspotData = ThisMakeupAdspot
 		}
+		adspotResultsArray = append(adspotResultsArray, ThisQueryTraceAdspotsReturnStruct)
+
 	}
 
 	jsonAsBytes, err := json.Marshal(adspotResultsArray)
