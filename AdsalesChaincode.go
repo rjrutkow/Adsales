@@ -1,6 +1,7 @@
+//AdsalesChaincode
 package main
 
-//Packages to import followed by a Pointer to your hyperledger installation
+//Packages to import followed by a Pointer to your hyperledger installation..............
 import (
 	"encoding/json"
 	"errors"
@@ -14,7 +15,8 @@ import (
 //CONSTANTS --------------------------------------------------------------------------------------------------------------------------
 //These are defined Constants for use throughout the gocode
 const noData string = "NA" //Defalt for empty string values
-const noValue int = -1     //Default for empty numerical values
+const noMakeup string = ""
+const noValue int = -1 //Default for empty numerical values
 const noTime string = "11 May 16 12:00 UTC"
 
 //STRUCTURES --------------------------------------------------------------------------------------------------------------------------
@@ -284,7 +286,7 @@ func (t *SimpleChaincode) releaseInventory(stub shim.ChaincodeStubInterface, arg
 			ThisAdspot.ActualGrp = float64(noValue)
 			ThisAdspot.ActualProgramName = noData
 			ThisAdspot.ActualDemographics = noData
-			ThisAdspot.MakupAdspotId = noData
+			ThisAdspot.MakupAdspotId = noMakeup
 
 			increment++
 			fmt.Printf("ThisAdspot: %+v ", ThisAdspot)
@@ -678,7 +680,7 @@ func (t *SimpleChaincode) queryTraceAdSpots(stub shim.ChaincodeStubInterface, ar
 		ThisQueryTraceAdspotsReturnStruct.UniqueAdspotId = ThisAdspot.UniqueAdspotId
 		ThisQueryTraceAdspotsReturnStruct.WasAired = ThisAdspot.WasAired
 
-		if ThisAdspot.MakupAdspotId != noData {
+		if ThisAdspot.MakupAdspotId != noMakeup {
 			ThisMakeupAdspotId := ThisAdspot.MakupAdspotId
 			ThisMakeupAdspot, _ := t.getAdspot(stub, ThisMakeupAdspotId)
 			ThisQueryTraceAdspotsReturnStruct.MakeupAdspotData = ThisMakeupAdspot
