@@ -116,6 +116,7 @@ type queryPlaceOrdersStruc struct {
 	TargetDemographics string  `json:"targetDemographics"`
 	InitialCpm         float64 `json:"initialCpm"`
 	Bsrp               float64 `json:"bsrp"`
+	NumberOfSpots      int     `json:"numberOfSpots"`
 }
 
 // This is a helper structure for querying placed orders (STEP 2)
@@ -198,6 +199,7 @@ func (t *SimpleChaincode) releaseInventory(stub shim.ChaincodeStubInterface, arg
 	fmt.Println("Running releaseInventory")
 
 	var broadcasterID = args[0]
+	var thisLotId = args[1]
 	var increment = 1
 
 	fmt.Println(broadcasterID)
@@ -205,7 +207,7 @@ func (t *SimpleChaincode) releaseInventory(stub shim.ChaincodeStubInterface, arg
 	allAdspotPointers, _ := t.getAllAdspotPointers(stub, broadcasterID)
 
 	//Outer Loop
-	for i := 1; i < len(args); i++ {
+	for i := 2; i < len(args); i++ {
 
 		var in = args[i]
 
@@ -225,7 +227,7 @@ func (t *SimpleChaincode) releaseInventory(stub shim.ChaincodeStubInterface, arg
 			var ThisAdspot adspot
 
 			ThisAdspot.UniqueAdspotId = (releaseInventoryObj.LotId + "_" + strconv.Itoa(increment))
-			ThisAdspot.LotId, _ = strconv.Atoi(releaseInventoryObj.LotId)
+			ThisAdspot.LotId, _ = strconv.Atoi(thisLotId)
 			ThisAdspot.AdspotId, _ = strconv.Atoi(releaseInventoryObj.AdspotId)
 
 			//Get Current Time
@@ -366,23 +368,34 @@ func (t *SimpleChaincode) queryPlaceOrders(stub shim.ChaincodeStubInterface, arg
 
 	broadcasterAllAdspotsPointers, _ := t.getAllAdspotPointers(stub, broadcasterId)
 
+	var numberOfSpotsCounter = 0
+
 	for i := 0; i < len(broadcasterAllAdspotsPointers.UniqueAdspotId); i++ {
 		var queryPlaceOrdersStrucObj queryPlaceOrdersStruc
+		numberOfSpotsCounter++
+
 		ThisAdspot, _ := t.getAdspot(stub, broadcasterAllAdspotsPointers.UniqueAdspotId[i])
 
-		if ThisAdspot.AdContractId == noValue {
-			queryPlaceOrdersStrucObj.AdspotId = ThisAdspot.AdspotId
-			queryPlaceOrdersStrucObj.BroadcasterId = ThisAdspot.BroadcasterId
-			queryPlaceOrdersStrucObj.Bsrp = ThisAdspot.Bsrp
-			queryPlaceOrdersStrucObj.DayPart = ThisAdspot.DayPart
-			queryPlaceOrdersStrucObj.Genre = ThisAdspot.Genre
-			queryPlaceOrdersStrucObj.InitialCpm = ThisAdspot.InitialCpm
-			queryPlaceOrdersStrucObj.LotId = ThisAdspot.LotId
-			queryPlaceOrdersStrucObj.ProgramName = ThisAdspot.ProgramName
-			queryPlaceOrdersStrucObj.TargetDemographics = ThisAdspot.TargetDemographics
-			queryPlaceOrdersStrucObj.TargetGrp = ThisAdspot.TargetGrp
-			queryPlaceOrdersArrayObj.PlacedOrderData = append(queryPlaceOrdersArrayObj.PlacedOrderData, queryPlaceOrdersStrucObj)
+		var currentAdspotId = -1
+
+		if ThisAdspot.AdspotId != currentAdspotId {
+			currentAdspotId = ThisAdspot.AdspotId
+			if ThisAdspot.AdContractId == noValue {
+				queryPlaceOrdersStrucObj.AdspotId = ThisAdspot.AdspotId
+				queryPlaceOrdersStrucObj.BroadcasterId = ThisAdspot.BroadcasterId
+				queryPlaceOrdersStrucObj.Bsrp = ThisAdspot.Bsrp
+				queryPlaceOrdersStrucObj.DayPart = ThisAdspot.DayPart
+				queryPlaceOrdersStrucObj.Genre = ThisAdspot.Genre
+				queryPlaceOrdersStrucObj.InitialCpm = ThisAdspot.InitialCpm
+				queryPlaceOrdersStrucObj.LotId = ThisAdspot.LotId
+				queryPlaceOrdersStrucObj.ProgramName = ThisAdspot.ProgramName
+				queryPlaceOrdersStrucObj.TargetDemographics = ThisAdspot.TargetDemographics
+				queryPlaceOrdersStrucObj.TargetGrp = ThisAdspot.TargetGrp
+				queryPlaceOrdersStrucObj.NumberOfSpots = numberOfSpotsCounter
+				queryPlaceOrdersArrayObj.PlacedOrderData = append(queryPlaceOrdersArrayObj.PlacedOrderData, queryPlaceOrdersStrucObj)
+			}
 		}
+
 	}
 
 	jsonAsBytes, err := json.Marshal(queryPlaceOrdersArrayObj)
