@@ -18,6 +18,7 @@ const noData string = "NA" //Defalt for empty string values
 const noMakeup string = ""
 const noValue int = -1 //Default for empty numerical values
 const noTime string = "11 May 16 12:00 UTC"
+const noContractResults string = "No report available"
 
 //STRUCTURES --------------------------------------------------------------------------------------------------------------------------
 // SimpleChaincode required structure
@@ -47,7 +48,7 @@ type adspot struct {
 	AdAssignedDate     time.Time `json:"adAssignedDate"`
 	CampaignName       string    `json:"campaignName"`
 	CampaignId         string    `json:"campaignId"`
-	WasAired           string    `json:"wasAired"`
+	ContractResults    string    `json:"contractResults"`
 	AiredDate          time.Time `json:"airedDate"`
 	ActualGrp          float64   `json:"actualGrp"`
 	ActualProgramName  string    `json:"actualProgramName"`
@@ -154,7 +155,7 @@ type queryAsRunStruc struct {
 	ProgramName        string    `json:"programName"`
 	TargetGrp          float64   `json:"targetGrp"`
 	TargetDemographics string    `json:"targetDemographics"`
-	WasAired           string    `json:"wasAired"`
+	ContractResults    string    `json:"contractResults"`
 	AiredDate          time.Time `json:"airedDate"`
 	ActualGrp          float64   `json:"actualGrp"`
 	ActualProgramName  string    `json:"actualProgramName"`
@@ -168,7 +169,7 @@ type queryAsRunArray struct {
 
 type reportAsRun struct {
 	UniqueAdspotId     string `json:"uniqueAdspotId"`
-	WasAired           string `json:"wasAired"`
+	ContractResults    string `json:"contractResults"`
 	AiredDate          string `json:"airedDate"`
 	AiredTime          string `json:"airedTime"`
 	ActualGrp          string `json:"actualGrp"`
@@ -199,7 +200,7 @@ type queryTraceAdSpotsResturnStruct struct {
 	AdAssignedDate     time.Time `json:"adAssignedDate"`
 	CampaignName       string    `json:"campaignName"`
 	CampaignId         string    `json:"campaignId"`
-	WasAired           string    `json:"wasAired"`
+	ContractResults    string    `json:"contractResults"`
 	AiredDate          time.Time `json:"airedDate"`
 	ActualGrp          float64   `json:"actualGrp"`
 	ActualProgramName  string    `json:"actualProgramName"`
@@ -280,7 +281,7 @@ func (t *SimpleChaincode) releaseInventory(stub shim.ChaincodeStubInterface, arg
 			ThisAdspot.AdAssignedDate, _ = time.Parse(time.RFC822, currentDateStr)
 			ThisAdspot.CampaignName = noData
 			ThisAdspot.CampaignId = noData
-			ThisAdspot.WasAired = noData
+			ThisAdspot.ContractResults = noContractResults
 			ThisAdspot.AiredDate, _ = time.Parse(time.RFC822, currentDateStr)
 			//ThisAdspot.AiredTime = noData
 			ThisAdspot.ActualGrp = float64(noValue)
@@ -563,7 +564,7 @@ func (t *SimpleChaincode) queryAsRun(stub shim.ChaincodeStubInterface, args []st
 		queryAsRunStrucObj.ProgramName = ThisAdspot.ProgramName
 		queryAsRunStrucObj.TargetDemographics = ThisAdspot.TargetDemographics
 		queryAsRunStrucObj.TargetGrp = ThisAdspot.TargetGrp
-		queryAsRunStrucObj.WasAired = ThisAdspot.WasAired
+		queryAsRunStrucObj.ContractResults = ThisAdspot.ContractResults
 
 		queryAsRunArrayObj.QueryAsRunData = append(queryAsRunArrayObj.QueryAsRunData, queryAsRunStrucObj)
 
@@ -608,7 +609,7 @@ func (t *SimpleChaincode) reportAsRun(stub shim.ChaincodeStubInterface, args []s
 			AdSpotObj, _ := t.getAdspot(stub, uniqueAdspotKey)
 
 			if AdSpotObj.UniqueAdspotId == reportAsRunObj.UniqueAdspotId {
-				AdSpotObj.WasAired = reportAsRunObj.WasAired
+				//AdSpotObj.ContractResults = reportAsRunObj.ContractResults
 				AdSpotObj.MakupAdspotId = reportAsRunObj.MakupAdspotId
 
 				//Create Timestamp based on current Time
@@ -625,21 +626,21 @@ func (t *SimpleChaincode) reportAsRun(stub shim.ChaincodeStubInterface, args []s
 				if AdSpotObj.ActualProgramName == AdSpotObj.ProgramName {
 					if AdSpotObj.ActualGrp >= AdSpotObj.TargetGrp {
 						if AdSpotObj.ActualDemographics == AdSpotObj.TargetDemographics {
-							fmt.Println("All Contract Terms Met. Setting WasAired to YES")
-							AdSpotObj.WasAired = "YES"
+							fmt.Println("All Contract Terms Met. Setting ContractResults to Completed")
+							AdSpotObj.ContractResults = "Completed Successfully"
 						} else {
-							fmt.Println("Demographics not met! Setting WasAired to FAILED")
-							AdSpotObj.WasAired = "FAILED"
+							fmt.Println("Demographics not met! Setting ContractResults to Demogrpahics message")
+							AdSpotObj.ContractResults = "Demographics requirements not met"
 							//LAUNCH AD RESCHEDULER
 						}
 					} else {
-						fmt.Println("Target GRP not met! Setting WasAired to FAILED")
-						AdSpotObj.WasAired = "FAILED"
+						fmt.Println("Target GRP not met! Setting ContractResults to GRP message")
+						AdSpotObj.ContractResults = "GRP requirements not met"
 						//LAUNCH AD RESCHEDULER
 					}
 				} else {
-					fmt.Println("Program Name not met! Setting WasAired to FAILED")
-					AdSpotObj.WasAired = "FAILED"
+					fmt.Println("Program Name not met! Setting ContractResults to Program message")
+					AdSpotObj.ContractResults = "Program requirements not met"
 					//LAUNCH AD RESCHEDULER
 				}
 
@@ -697,7 +698,7 @@ func (t *SimpleChaincode) queryTraceAdSpots(stub shim.ChaincodeStubInterface, ar
 		ThisQueryTraceAdspotsReturnStruct.TargetDemographics = ThisAdspot.TargetDemographics
 		ThisQueryTraceAdspotsReturnStruct.TargetGrp = ThisAdspot.TargetGrp
 		ThisQueryTraceAdspotsReturnStruct.UniqueAdspotId = ThisAdspot.UniqueAdspotId
-		ThisQueryTraceAdspotsReturnStruct.WasAired = ThisAdspot.WasAired
+		ThisQueryTraceAdspotsReturnStruct.ContractResults = ThisAdspot.ContractResults
 
 		if ThisAdspot.MakupAdspotId != noMakeup {
 			ThisMakeupAdspotId := ThisAdspot.MakupAdspotId
