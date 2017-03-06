@@ -206,7 +206,7 @@ type queryTraceAdSpotsResturnStruct struct {
 	ActualProgramName  string    `json:"actualProgramName"`
 	ActualDemographics string    `json:"actualDemographics"`
 	MakupAdspotId      string    `json:"makupAdspotId"`
-	MakeupAdspotData   []byte    `json:"makupAdspotData"`
+	MakeupAdspotData   adspot    `json:"makupAdspotData"`
 }
 
 //For Debugging
@@ -703,26 +703,11 @@ func (t *SimpleChaincode) queryTraceAdSpots(stub shim.ChaincodeStubInterface, ar
 			fmt.Println("Makeup addspot detected within queryTraceAdSpots")
 			ThisMakeupAdspotId := ThisAdspot.MakupAdspotId
 			ThisMakeupAdspot, _ := t.getAdspot(stub, ThisMakeupAdspotId)
-			//ThisQueryTraceAdspotsReturnStruct.MakeupAdspotData = ThisMakeupAdspot
-			makeupAsBytes, err := json.Marshal(ThisMakeupAdspot)
-			if err != nil {
-				fmt.Println("Converting makeup adspot data to json to nest ")
-				return nil, err
-			}
-			ThisQueryTraceAdspotsReturnStruct.MakeupAdspotData = makeupAsBytes
-
-		} else {
-			makeupAsBytes, err := json.Marshal(noData)
-			if err != nil {
-				fmt.Println("Converting noData for makeup adspot")
-				return nil, err
-			}
-			ThisQueryTraceAdspotsReturnStruct.MakeupAdspotData = makeupAsBytes
+			ThisQueryTraceAdspotsReturnStruct.MakeupAdspotData = ThisMakeupAdspot
 		}
 		adspotResultsArray = append(adspotResultsArray, ThisQueryTraceAdspotsReturnStruct)
 
 	}
-
 	jsonAsBytes, err := json.Marshal(adspotResultsArray)
 	if err != nil {
 		fmt.Println("Error returning json output for queryTraceAdSpot ")
