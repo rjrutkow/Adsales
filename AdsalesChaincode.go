@@ -206,7 +206,7 @@ type queryTraceAdSpotsResturnStruct struct {
 	ActualProgramName  string    `json:"actualProgramName"`
 	ActualDemographics string    `json:"actualDemographics"`
 	MakupAdspotId      string    `json:"makupAdspotId"`
-	MakeupAdspotData   adspot    `json:"makupAdspotData"`
+	MakeupAdspotData   []byte    `json:"makupAdspotData"`
 }
 
 //For Debugging
@@ -690,7 +690,6 @@ func (t *SimpleChaincode) queryTraceAdSpots(stub shim.ChaincodeStubInterface, ar
 		ThisQueryTraceAdspotsReturnStruct.InitialCpm = ThisAdspot.InitialCpm
 		ThisQueryTraceAdspotsReturnStruct.InventoryDate = ThisAdspot.InventoryDate
 		ThisQueryTraceAdspotsReturnStruct.LotId = ThisAdspot.LotId
-		ThisQueryTraceAdspotsReturnStruct.MakupAdspotId = ThisAdspot.MakupAdspotId
 		ThisQueryTraceAdspotsReturnStruct.OrderDate = ThisAdspot.OrderDate
 		ThisQueryTraceAdspotsReturnStruct.OrderNumber = ThisAdspot.OrderNumber
 		ThisQueryTraceAdspotsReturnStruct.ProgramName = ThisAdspot.ProgramName
@@ -701,9 +700,24 @@ func (t *SimpleChaincode) queryTraceAdSpots(stub shim.ChaincodeStubInterface, ar
 		ThisQueryTraceAdspotsReturnStruct.ContractResults = ThisAdspot.ContractResults
 
 		if ThisAdspot.MakupAdspotId != noMakeup {
+			fmt.Println("Makeup addspot detected within queryTraceAdSpots")
 			ThisMakeupAdspotId := ThisAdspot.MakupAdspotId
 			ThisMakeupAdspot, _ := t.getAdspot(stub, ThisMakeupAdspotId)
-			ThisQueryTraceAdspotsReturnStruct.MakeupAdspotData = ThisMakeupAdspot
+			//ThisQueryTraceAdspotsReturnStruct.MakeupAdspotData = ThisMakeupAdspot
+			makeupAsBytes, err := json.Marshal(ThisMakeupAdspot)
+			if err != nil {
+				fmt.Println("Converting makeup adspot data to json to nest ")
+				return nil, err
+			}
+			ThisQueryTraceAdspotsReturnStruct.MakeupAdspotData = makeupAsBytes
+
+		} else {
+			makeupAsBytes, err := json.Marshal(noData)
+			if err != nil {
+				fmt.Println("Converting noData for makeup adspot")
+				return nil, err
+			}
+			ThisQueryTraceAdspotsReturnStruct.MakeupAdspotData = makeupAsBytes
 		}
 		adspotResultsArray = append(adspotResultsArray, ThisQueryTraceAdspotsReturnStruct)
 
