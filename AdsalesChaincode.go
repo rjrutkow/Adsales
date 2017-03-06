@@ -656,7 +656,6 @@ func (t *SimpleChaincode) reportAsRun(stub shim.ChaincodeStubInterface, args []s
 }
 
 //STEP 5 Function - Trace a unique adspot
-//SIMILAR TO GET ALL ADSPOTS???
 func (t *SimpleChaincode) queryTraceAdSpots(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 
 	fmt.Println("Launching queryTraceAdSpot")
@@ -705,6 +704,7 @@ func (t *SimpleChaincode) queryTraceAdSpots(stub shim.ChaincodeStubInterface, ar
 			ThisMakeupAdspot, _ := t.getAdspot(stub, ThisMakeupAdspotId)
 			ThisQueryTraceAdspotsReturnStruct.MakeupAdspotData = ThisMakeupAdspot
 		}
+
 		adspotResultsArray = append(adspotResultsArray, ThisQueryTraceAdspotsReturnStruct)
 
 	}
