@@ -480,6 +480,7 @@ func (t *SimpleChaincode) queryPlaceOrders(stub shim.ChaincodeStubInterface, arg
 						fmt.Printf("*** Found reserved spot for show: %v \n", ThisAdspot.ProgramName)
 					} else { // different ad spot id found - save data and break out of loop
 						addedToArray = true
+						fmt.Printf("*** in else ... Saving data - number of spots is: %v \n", queryPlaceOrdersStrucObj.NumberOfSpots)
 						queryPlaceOrdersArrayObj.PlacedOrderData = append(queryPlaceOrdersArrayObj.PlacedOrderData, queryPlaceOrdersStrucObj)
 						i = (j - 1)
 						fmt.Printf("*** setting i to: %v \n", i)
@@ -488,6 +489,8 @@ func (t *SimpleChaincode) queryPlaceOrders(stub shim.ChaincodeStubInterface, arg
 				} // for
 
 				if !addedToArray {
+					fmt.Printf("*** in if !addedToArray ... Saving data - number of spots is: %v \n", queryPlaceOrdersStrucObj.NumberOfSpots)
+
 					queryPlaceOrdersArrayObj.PlacedOrderData = append(queryPlaceOrdersArrayObj.PlacedOrderData, queryPlaceOrdersStrucObj)
 				}
 			} // if
