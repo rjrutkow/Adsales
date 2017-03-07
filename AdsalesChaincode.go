@@ -47,7 +47,7 @@ type adspot struct {
 	AdContractId       int       `json:"adContractId"`
 	AdAssignedDate     time.Time `json:"adAssignedDate"`
 	CampaignName       string    `json:"campaignName"`
-	CampaignId         string    `json:"campaignId"`
+	//CampaignId         string    `json:"campaignId"`
 	ContractResults    string    `json:"contractResults"`
 	AiredDate          time.Time `json:"airedDate"`
 	ActualGrp          float64   `json:"actualGrp"`
@@ -149,11 +149,11 @@ type mapAdspots struct {
 }
 
 type queryAsRunStruc struct {
-	UniqueAdspotId     string    `json:"uniqueAdspotId"`
-	AdspotId           int       `json:"adspotId"`
-	AdContractId       int       `json:"adContractId"`
-	CampaignName       string    `json:"campaignName"`
-	CampaignId         string    `json:"campaignId"`
+	UniqueAdspotId string `json:"uniqueAdspotId"`
+	AdspotId       int    `json:"adspotId"`
+	AdContractId   int    `json:"adContractId"`
+	CampaignName   string `json:"campaignName"`
+	//CampaignId         string    `json:"campaignId"`
 	ProgramName        string    `json:"programName"`
 	TargetGrp          float64   `json:"targetGrp"`
 	TargetDemographics string    `json:"targetDemographics"`
@@ -201,14 +201,14 @@ type queryTraceAdSpotsResturnStruct struct {
 	AdContractId       int       `json:"adContractId"`
 	AdAssignedDate     time.Time `json:"adAssignedDate"`
 	CampaignName       string    `json:"campaignName"`
-	CampaignId         string    `json:"campaignId"`
+	//CampaignId         string    `json:"campaignId"`
 	ContractResults    string    `json:"contractResults"`
 	AiredDate          time.Time `json:"airedDate"`
 	ActualGrp          float64   `json:"actualGrp"`
 	ActualProgramName  string    `json:"actualProgramName"`
 	ActualDemographics string    `json:"actualDemographics"`
 	MakupAdspotId      string    `json:"makupAdspotId"`
-	MakeupAdspotData   adspot    `json:"makupAdspotData"`
+	MakeupAdspotData   []adspot  `json:"makupAdspotData"`
 }
 
 //For Debugging
@@ -282,7 +282,7 @@ func (t *SimpleChaincode) releaseInventory(stub shim.ChaincodeStubInterface, arg
 			ThisAdspot.AdContractId = noValue
 			ThisAdspot.AdAssignedDate, _ = time.Parse(time.RFC822, currentDateStr)
 			ThisAdspot.CampaignName = noData
-			ThisAdspot.CampaignId = noData
+			//ThisAdspot.CampaignId = noData
 			ThisAdspot.ContractResults = noContractResults
 			ThisAdspot.AiredDate, _ = time.Parse(time.RFC822, currentDateStr)
 			//ThisAdspot.AiredTime = noData
@@ -328,7 +328,7 @@ func (t *SimpleChaincode) releaseInventory(stub shim.ChaincodeStubInterface, arg
 			ThisAdspot.AdContractId = noValue
 			ThisAdspot.AdAssignedDate, _ = time.Parse(time.RFC822, currentDateStr)
 			ThisAdspot.CampaignName = noData
-			ThisAdspot.CampaignId = noData
+			//ThisAdspot.CampaignId = noData
 			ThisAdspot.ContractResults = noContractResults
 			ThisAdspot.AiredDate, _ = time.Parse(time.RFC822, currentDateStr)
 			//ThisAdspot.AiredTime = noData
@@ -616,7 +616,7 @@ func (t *SimpleChaincode) queryAsRun(stub shim.ChaincodeStubInterface, args []st
 		queryAsRunStrucObj.AdContractId = ThisAdspot.AdContractId
 		queryAsRunStrucObj.AiredDate = ThisAdspot.AiredDate
 		//queryAsRunStrucObj.AiredTime = ThisAdspot.AiredTime
-		queryAsRunStrucObj.CampaignId = ThisAdspot.CampaignId
+		//queryAsRunStrucObj.CampaignId = ThisAdspot.CampaignId
 		queryAsRunStrucObj.CampaignName = ThisAdspot.CampaignName
 		queryAsRunStrucObj.MakupAdspotId = ThisAdspot.MakupAdspotId
 		queryAsRunStrucObj.ProgramName = ThisAdspot.ProgramName
@@ -670,6 +670,19 @@ func (t *SimpleChaincode) reportAsRun(stub shim.ChaincodeStubInterface, args []s
 				//AdSpotObj.ContractResults = reportAsRunObj.ContractResults
 				AdSpotObj.MakupAdspotId = reportAsRunObj.MakupAdspotId
 
+				if AdSpotObj.MakupAdspotId != noMakeup {
+					fmt.Println("Detected Makeup Adspot, updating pointers for advertiser and adagency")
+					adAgencyAllPointers, _ := t.getAllAdspotPointers(stub, AdSpotObj.AdAgencyId)
+					advertiserAllPointers, _ := t.getAllAdspotPointers(stub, AdSpotObj.AdvertiserId)
+
+					adAgencyAllPointers.UniqueAdspotId = append(adAgencyAllPointers.UniqueAdspotId, AdSpotObj.MakupAdspotId)
+					advertiserAllPointers.UniqueAdspotId = append(advertiserAllPointers.UniqueAdspotId, AdSpotObj.MakupAdspotId)
+
+					t.putAllAdspotPointers(stub, adAgencyAllPointers, AdSpotObj.AdAgencyId)
+					t.putAllAdspotPointers(stub, advertiserAllPointers, AdSpotObj.AdvertiserId)
+
+				}
+
 				//Create Timestamp based on current Time
 				var airedDate time.Time = time.Now().AddDate(0, 0, 7)
 				airedDateStr := airedDate.Format(time.RFC822)
@@ -703,6 +716,7 @@ func (t *SimpleChaincode) reportAsRun(stub shim.ChaincodeStubInterface, args []s
 				}
 
 				t.putAdspot(stub, AdSpotObj)
+
 			} else {
 				fmt.Println("Unique Adspot ID Mismatch in reportAsRun - need to re-evaluate logic")
 			}
@@ -740,7 +754,7 @@ func (t *SimpleChaincode) queryTraceAdSpots(stub shim.ChaincodeStubInterface, ar
 		ThisQueryTraceAdspotsReturnStruct.AiredDate = ThisAdspot.AiredDate
 		ThisQueryTraceAdspotsReturnStruct.BroadcasterId = ThisAdspot.BroadcasterId
 		ThisQueryTraceAdspotsReturnStruct.Bsrp = ThisAdspot.Bsrp
-		ThisQueryTraceAdspotsReturnStruct.CampaignId = ThisAdspot.CampaignId
+		//ThisQueryTraceAdspotsReturnStruct.CampaignId = ThisAdspot.CampaignId
 		ThisQueryTraceAdspotsReturnStruct.CampaignName = ThisAdspot.CampaignName
 		ThisQueryTraceAdspotsReturnStruct.DayPart = ThisAdspot.DayPart
 		ThisQueryTraceAdspotsReturnStruct.Genre = ThisAdspot.Genre
@@ -760,7 +774,9 @@ func (t *SimpleChaincode) queryTraceAdSpots(stub shim.ChaincodeStubInterface, ar
 			fmt.Println("Makeup addspot detected within queryTraceAdSpots")
 			ThisMakeupAdspotId := ThisAdspot.MakupAdspotId
 			ThisMakeupAdspot, _ := t.getAdspot(stub, ThisMakeupAdspotId)
-			ThisQueryTraceAdspotsReturnStruct.MakeupAdspotData = ThisMakeupAdspot
+
+			//Line below needs testing....
+			ThisQueryTraceAdspotsReturnStruct.MakeupAdspotData = append(ThisQueryTraceAdspotsReturnStruct.MakeupAdspotData, ThisMakeupAdspot)
 		}
 
 		adspotResultsArray = append(adspotResultsArray, ThisQueryTraceAdspotsReturnStruct)
