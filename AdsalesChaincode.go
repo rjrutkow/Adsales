@@ -451,7 +451,7 @@ func (t *SimpleChaincode) queryPlaceOrders(stub shim.ChaincodeStubInterface, arg
 		ThisAdspot, _ := t.getAdspot(stub, broadcasterAllAdspotsPointers.UniqueAdspotId[i])
 
 		// if different Aspot id found and it is not a reserved spot
-		if ThisAdspot.AdspotId != currentAdspotId && ThisAdspot.AdspotId != noValue {
+		if (ThisAdspot.AdspotId != currentAdspotId) && (ThisAdspot.AdspotId != noValue) {
 			if ThisAdspot.AdContractId == noValue {
 				currentAdspotId = ThisAdspot.AdspotId
 				queryPlaceOrdersStrucObj.AdspotId = ThisAdspot.AdspotId
@@ -521,18 +521,20 @@ func (t *SimpleChaincode) queryAdspotsToMap(stub shim.ChaincodeStubInterface, ar
 	agencyAllAdspotsPointers, _ := t.getAllAdspotPointers(stub, agencyId)
 
 	for i := 0; i < len(agencyAllAdspotsPointers.UniqueAdspotId); i++ {
-		var queryAdspotsToMapStructObj queryAdspotsToMapStruct
 		ThisAdspot, _ := t.getAdspot(stub, agencyAllAdspotsPointers.UniqueAdspotId[i])
 
-		queryAdspotsToMapStructObj.UniqueAdspotId = ThisAdspot.UniqueAdspotId
-		queryAdspotsToMapStructObj.BroadcasterId = ThisAdspot.BroadcasterId
-		queryAdspotsToMapStructObj.AdContractId = ThisAdspot.AdContractId
-		queryAdspotsToMapStructObj.CampaignName = ThisAdspot.CampaignName
-		queryAdspotsToMapStructObj.AdvertiserId = ThisAdspot.AdvertiserId
-		queryAdspotsToMapStructObj.TargetGrp = ThisAdspot.TargetGrp
-		queryAdspotsToMapStructObj.TargetDemographics = ThisAdspot.TargetDemographics
-		queryAdspotsToMapStructObj.InitialCpm = ThisAdspot.InitialCpm
-		queryAdspotsToMapArrayObj.AdspotsToMapData = append(queryAdspotsToMapArrayObj.AdspotsToMapData, queryAdspotsToMapStructObj)
+		if ThisAdspot.AdspotId != noValue { // if not a reserved spot
+			var queryAdspotsToMapStructObj queryAdspotsToMapStruct
+			queryAdspotsToMapStructObj.UniqueAdspotId = ThisAdspot.UniqueAdspotId
+			queryAdspotsToMapStructObj.BroadcasterId = ThisAdspot.BroadcasterId
+			queryAdspotsToMapStructObj.AdContractId = ThisAdspot.AdContractId
+			queryAdspotsToMapStructObj.CampaignName = ThisAdspot.CampaignName
+			queryAdspotsToMapStructObj.AdvertiserId = ThisAdspot.AdvertiserId
+			queryAdspotsToMapStructObj.TargetGrp = ThisAdspot.TargetGrp
+			queryAdspotsToMapStructObj.TargetDemographics = ThisAdspot.TargetDemographics
+			queryAdspotsToMapStructObj.InitialCpm = ThisAdspot.InitialCpm
+			queryAdspotsToMapArrayObj.AdspotsToMapData = append(queryAdspotsToMapArrayObj.AdspotsToMapData, queryAdspotsToMapStructObj)
+		}
 	}
 
 	jsonAsBytes, err := json.Marshal(queryAdspotsToMapArrayObj)
