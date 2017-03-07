@@ -474,10 +474,11 @@ func (t *SimpleChaincode) queryPlaceOrders(stub shim.ChaincodeStubInterface, arg
 						if NextAdspot.AdContractId == noValue { // if ad spot is available for purchase, count it
 							fmt.Printf("*** Found dupilcate for show: %v \n", ThisAdspot.ProgramName)
 							queryPlaceOrdersStrucObj.NumberOfSpots++
+							fmt.Printf("*** Number of spots for this show is now: %v \n", queryPlaceOrdersStrucObj.NumberOfSpots)
 						}
 					} else if NextAdspot.AdspotId == noValue { // skip the reserved AllAdspots
 						fmt.Printf("*** Found reserved spot for show: %v \n", ThisAdspot.ProgramName)
-					} else {
+					} else { // different ad spot id found - save data and break out of loop
 						addedToArray = true
 						queryPlaceOrdersArrayObj.PlacedOrderData = append(queryPlaceOrdersArrayObj.PlacedOrderData, queryPlaceOrdersStrucObj)
 						i = (j - 1)
