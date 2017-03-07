@@ -150,6 +150,7 @@ type mapAdspots struct {
 
 type queryAsRunStruc struct {
 	UniqueAdspotId     string    `json:"uniqueAdspotId"`
+	AdspotId           int       `json:"adspotId"`
 	AdContractId       int       `json:"adContractId"`
 	CampaignName       string    `json:"campaignName"`
 	CampaignId         string    `json:"campaignId"`
@@ -608,6 +609,7 @@ func (t *SimpleChaincode) queryAsRun(stub shim.ChaincodeStubInterface, args []st
 		ThisAdspot, _ := t.getAdspot(stub, broadcasterAllAdspotsPointers.UniqueAdspotId[i])
 
 		queryAsRunStrucObj.UniqueAdspotId = ThisAdspot.UniqueAdspotId
+		queryAsRunStrucObj.AdspotId = ThisAdspot.AdspotId
 		queryAsRunStrucObj.ActualDemographics = ThisAdspot.ActualDemographics
 		queryAsRunStrucObj.ActualGrp = ThisAdspot.ActualGrp
 		queryAsRunStrucObj.ActualProgramName = ThisAdspot.ActualProgramName
