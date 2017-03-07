@@ -58,19 +58,20 @@ type adspot struct {
 
 //This is a helper structure for releasing Adspots (STEP 1)
 type releaseInventory struct {
-	LotId              string `json:"lotId"`
-	AdspotId           string `json:"adspotId"`
-	InventoryDate      string `json:"inventoryDate"`
-	ProgramName        string `json:"programName"`
-	SeasonEpisode      string `json:"seasonEpisode"`
-	BroadcasterId      string `json:"broadcasterId"`
-	Genre              string `json:"genre"`
-	DayPart            string `json:"dayPart"`
-	TargetGrp          string `json:"targetGrp"`
-	TargetDemographics string `json:"targetDemographics"`
-	InitialCpm         string `json:"initialCpm"`
-	Bsrp               string `json:"bsrp"`
-	NumberOfSpots      string `json:"numberofSpots"`
+	LotId               string `json:"lotId"`
+	AdspotId            string `json:"adspotId"`
+	InventoryDate       string `json:"inventoryDate"`
+	ProgramName         string `json:"programName"`
+	SeasonEpisode       string `json:"seasonEpisode"`
+	BroadcasterId       string `json:"broadcasterId"`
+	Genre               string `json:"genre"`
+	DayPart             string `json:"dayPart"`
+	TargetGrp           string `json:"targetGrp"`
+	TargetDemographics  string `json:"targetDemographics"`
+	InitialCpm          string `json:"initialCpm"`
+	Bsrp                string `json:"bsrp"`
+	NumberOfSpots       string `json:"numberofSpots"`
+	NumberReservedSpots string `json:"numberReservedSpots"`
 }
 
 // This is a helper structure for querying placed orders (STEP 2)
@@ -297,6 +298,52 @@ func (t *SimpleChaincode) releaseInventory(stub shim.ChaincodeStubInterface, arg
 			t.putAdspot(stub, ThisAdspot)
 		}
 
+		NumberReservedSpots, _ := strconv.Atoi(releaseInventoryObj.NumberReservedSpots)
+
+		for y := 0; y < NumberReservedSpots; y++ {
+			var ThisAdspot adspot
+
+			ThisAdspot.UniqueAdspotId = (thisLotId + "_" + strconv.Itoa(increment))
+			ThisAdspot.LotId, _ = strconv.Atoi(thisLotId)
+			ThisAdspot.AdspotId = noValue
+
+			//Get Current Time
+			currentDateStr := time.Now().Format(time.RFC822)
+			ThisAdspot.InventoryDate, _ = time.Parse(time.RFC822, currentDateStr)
+
+			ThisAdspot.ProgramName = releaseInventoryObj.ProgramName
+			ThisAdspot.SeasonEpisode = releaseInventoryObj.SeasonEpisode
+			ThisAdspot.BroadcasterId = broadcasterID
+			ThisAdspot.Genre = releaseInventoryObj.Genre
+			ThisAdspot.DayPart = releaseInventoryObj.DayPart
+			ThisAdspot.TargetGrp, _ = strconv.ParseFloat(releaseInventoryObj.TargetGrp, 64)
+			ThisAdspot.TargetDemographics = releaseInventoryObj.TargetDemographics
+			ThisAdspot.InitialCpm, _ = strconv.ParseFloat(releaseInventoryObj.InitialCpm, 64)
+			ThisAdspot.Bsrp, _ = strconv.ParseFloat(releaseInventoryObj.Bsrp, 64)
+			ThisAdspot.OrderDate, _ = time.Parse(time.RFC822, currentDateStr)
+			ThisAdspot.AdAgencyId = noData
+			ThisAdspot.OrderNumber = noValue
+			ThisAdspot.AdvertiserId = noData
+			ThisAdspot.AdContractId = noValue
+			ThisAdspot.AdAssignedDate, _ = time.Parse(time.RFC822, currentDateStr)
+			ThisAdspot.CampaignName = noData
+			ThisAdspot.CampaignId = noData
+			ThisAdspot.ContractResults = noContractResults
+			ThisAdspot.AiredDate, _ = time.Parse(time.RFC822, currentDateStr)
+			//ThisAdspot.AiredTime = noData
+			ThisAdspot.ActualGrp = float64(noValue)
+			ThisAdspot.ActualProgramName = noData
+			ThisAdspot.ActualDemographics = noData
+			ThisAdspot.MakupAdspotId = noMakeup
+
+			increment++
+			fmt.Printf("ThisAdspot: %+v ", ThisAdspot)
+			fmt.Printf("\n")
+			allAdspotPointers.UniqueAdspotId = append(allAdspotPointers.UniqueAdspotId, ThisAdspot.UniqueAdspotId)
+
+			t.putAdspot(stub, ThisAdspot)
+		}
+
 	}
 
 	t.putAllAdspotPointers(stub, allAdspotPointers, broadcasterID)
@@ -428,11 +475,13 @@ func (t *SimpleChaincode) queryPlaceOrders(stub shim.ChaincodeStubInterface, arg
 							fmt.Printf("*** Found dupilcate for show: %v \n", ThisAdspot.ProgramName)
 							queryPlaceOrdersStrucObj.NumberOfSpots++
 						}
+					} else if NextAdspot.AdspotId == noValue { // skip the reserved AllAdspots
+						fmt.Printf("*** Found reserved spot for show: %v \n", ThisAdspot.ProgramName)
 					} else {
 						addedToArray = true
 						queryPlaceOrdersArrayObj.PlacedOrderData = append(queryPlaceOrdersArrayObj.PlacedOrderData, queryPlaceOrdersStrucObj)
 						i = (j - 1)
-						fmt.Printf("*********** setting i to: %v \n", i)
+						fmt.Printf("*** setting i to: %v \n", i)
 						break
 					}
 				} // for
