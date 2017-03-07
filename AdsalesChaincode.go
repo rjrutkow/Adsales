@@ -736,6 +736,7 @@ func (t *SimpleChaincode) putAdspot(stub shim.ChaincodeStubInterface, adspotObj 
 	} else {
 		fmt.Println("Success - putAdspot putState works")
 	}
+
 	fmt.Println("putAdspot Function Complete")
 	return nil, nil
 }
