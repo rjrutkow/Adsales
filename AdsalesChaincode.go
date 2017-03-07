@@ -450,7 +450,7 @@ func (t *SimpleChaincode) queryPlaceOrders(stub shim.ChaincodeStubInterface, arg
 		var queryPlaceOrdersStrucObj queryPlaceOrdersStruc
 		ThisAdspot, _ := t.getAdspot(stub, broadcasterAllAdspotsPointers.UniqueAdspotId[i])
 
-		if ThisAdspot.AdspotId != currentAdspotId {
+		if ThisAdspot.AdspotId != currentAdspotId && ThisAdspot.AdspotId != noValue {
 			if ThisAdspot.AdContractId == noValue {
 				currentAdspotId = ThisAdspot.AdspotId
 				queryPlaceOrdersStrucObj.AdspotId = ThisAdspot.AdspotId
