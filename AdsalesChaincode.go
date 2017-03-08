@@ -894,6 +894,7 @@ func (t *SimpleChaincode) reInitAllPointers(stub shim.ChaincodeStubInterface) ([
 	agencyId := "AgencyA"
 	advertiser1Id := "AdvertiserA"
 	advertiser2Id := "AdvertiserB"
+	advertiser3Id := "AdvertiserC"
 
 	//Create array for all adspots in ledger
 	var AllAdspotsArray AllAdspots
@@ -902,6 +903,7 @@ func (t *SimpleChaincode) reInitAllPointers(stub shim.ChaincodeStubInterface) ([
 	t.putAllAdspotPointers(stub, AllAdspotsArray, agencyId)
 	t.putAllAdspotPointers(stub, AllAdspotsArray, advertiser1Id)
 	t.putAllAdspotPointers(stub, AllAdspotsArray, advertiser2Id)
+	t.putAllAdspotPointers(stub, AllAdspotsArray, advertiser3Id)
 
 	fmt.Println("Demo Reset Complete")
 	return nil, nil
@@ -918,6 +920,7 @@ func (t *SimpleChaincode) Init(stub shim.ChaincodeStubInterface, function string
 	agencyId := "AgencyA"
 	advertiser1Id := "AdvertiserA"
 	advertiser2Id := "AdvertiserB"
+	advertiser3Id := "AdvertiserC"
 
 	//Create array for all adspots in ledger
 	var AllAdspotsArray AllAdspots
@@ -926,6 +929,7 @@ func (t *SimpleChaincode) Init(stub shim.ChaincodeStubInterface, function string
 	t.putAllAdspotPointers(stub, AllAdspotsArray, agencyId)
 	t.putAllAdspotPointers(stub, AllAdspotsArray, advertiser1Id)
 	t.putAllAdspotPointers(stub, AllAdspotsArray, advertiser2Id)
+	t.putAllAdspotPointers(stub, AllAdspotsArray, advertiser3Id)
 
 	fmt.Println("Init Function Complete")
 	return nil, nil
