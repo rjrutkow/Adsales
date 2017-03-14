@@ -681,7 +681,7 @@ func (t *SimpleChaincode) reportAsRun(stub shim.ChaincodeStubInterface, args []s
 					//NEW CODE
 					s := strings.Split(AdSpotObj.MakupAdspotId, ",")
 					for z := 0; j < len(s); z++ {
-
+						fmt.Printf("This is MakeupID:", s[z])
 						adAgencyAllPointers.UniqueAdspotId = append(adAgencyAllPointers.UniqueAdspotId, s[z])
 						advertiserAllPointers.UniqueAdspotId = append(advertiserAllPointers.UniqueAdspotId, s[z])
 
