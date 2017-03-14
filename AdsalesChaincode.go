@@ -9,6 +9,8 @@ import (
 	"strconv"
 	"time"
 
+	"strings"
+
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 )
 
@@ -671,12 +673,19 @@ func (t *SimpleChaincode) reportAsRun(stub shim.ChaincodeStubInterface, args []s
 				AdSpotObj.MakupAdspotId = reportAsRunObj.MakupAdspotId
 
 				if AdSpotObj.MakupAdspotId != noMakeup {
-					fmt.Println("Detected Makeup Adspot, updating pointers for advertiser and adagency")
+					fmt.Println("Detected Makeup Adspot(s), updating pointers for advertiser and adagency")
+
 					adAgencyAllPointers, _ := t.getAllAdspotPointers(stub, AdSpotObj.AdAgencyId)
 					advertiserAllPointers, _ := t.getAllAdspotPointers(stub, AdSpotObj.AdvertiserId)
 
-					adAgencyAllPointers.UniqueAdspotId = append(adAgencyAllPointers.UniqueAdspotId, AdSpotObj.MakupAdspotId)
-					advertiserAllPointers.UniqueAdspotId = append(advertiserAllPointers.UniqueAdspotId, AdSpotObj.MakupAdspotId)
+					//NEW CODE
+					s := strings.Split(AdSpotObj.MakupAdspotId, ",")
+					for z := 0; j < len(s); z++ {
+
+						adAgencyAllPointers.UniqueAdspotId = append(adAgencyAllPointers.UniqueAdspotId, s[z])
+						advertiserAllPointers.UniqueAdspotId = append(advertiserAllPointers.UniqueAdspotId, s[z])
+
+					}
 
 					t.putAllAdspotPointers(stub, adAgencyAllPointers, AdSpotObj.AdAgencyId)
 					t.putAllAdspotPointers(stub, advertiserAllPointers, AdSpotObj.AdvertiserId)
@@ -754,7 +763,6 @@ func (t *SimpleChaincode) queryTraceAdSpots(stub shim.ChaincodeStubInterface, ar
 		ThisQueryTraceAdspotsReturnStruct.AiredDate = ThisAdspot.AiredDate
 		ThisQueryTraceAdspotsReturnStruct.BroadcasterId = ThisAdspot.BroadcasterId
 		ThisQueryTraceAdspotsReturnStruct.Bsrp = ThisAdspot.Bsrp
-		//ThisQueryTraceAdspotsReturnStruct.CampaignId = ThisAdspot.CampaignId
 		ThisQueryTraceAdspotsReturnStruct.CampaignName = ThisAdspot.CampaignName
 		ThisQueryTraceAdspotsReturnStruct.DayPart = ThisAdspot.DayPart
 		ThisQueryTraceAdspotsReturnStruct.Genre = ThisAdspot.Genre
@@ -771,12 +779,17 @@ func (t *SimpleChaincode) queryTraceAdSpots(stub shim.ChaincodeStubInterface, ar
 		ThisQueryTraceAdspotsReturnStruct.ContractResults = ThisAdspot.ContractResults
 
 		if ThisAdspot.MakupAdspotId != noMakeup {
-			fmt.Println("Makeup addspot detected within queryTraceAdSpots")
-			ThisMakeupAdspotId := ThisAdspot.MakupAdspotId
-			ThisMakeupAdspot, _ := t.getAdspot(stub, ThisMakeupAdspotId)
+			fmt.Println("Makeup addspot(s) detected within queryTraceAdSpots")
+			//NEW CODE
+			var MakeupAdspotData []adspot
 
-			//Line below needs testing....
-			ThisQueryTraceAdspotsReturnStruct.MakeupAdspotData = append(ThisQueryTraceAdspotsReturnStruct.MakeupAdspotData, ThisMakeupAdspot)
+			s := strings.Split(ThisAdspot.MakupAdspotId, ",")
+			for z := 0; j < len(s); z++ {
+
+				ThisMakeupAdspot, _ := t.getAdspot(stub, s[z])
+				MakeupAdspotData = append(MakeupAdspotData, ThisMakeupAdspot)
+			}
+			ThisQueryTraceAdspotsReturnStruct.MakeupAdspotData = MakeupAdspotData
 		}
 
 		adspotResultsArray = append(adspotResultsArray, ThisQueryTraceAdspotsReturnStruct)
