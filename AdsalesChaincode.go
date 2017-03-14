@@ -680,8 +680,8 @@ func (t *SimpleChaincode) reportAsRun(stub shim.ChaincodeStubInterface, args []s
 
 					//NEW CODE
 					s := strings.Split(AdSpotObj.MakupAdspotId, ",")
-					for z := 0; j < len(s); z++ {
-						fmt.Printf("This is MakeupID:", s[z])
+					for z := 0; z < len(s); z++ {
+						fmt.Println("This is MakeupID:", s[z])
 						adAgencyAllPointers.UniqueAdspotId = append(adAgencyAllPointers.UniqueAdspotId, s[z])
 						advertiserAllPointers.UniqueAdspotId = append(advertiserAllPointers.UniqueAdspotId, s[z])
 
@@ -784,7 +784,7 @@ func (t *SimpleChaincode) queryTraceAdSpots(stub shim.ChaincodeStubInterface, ar
 			var MakeupAdspotData []adspot
 
 			s := strings.Split(ThisAdspot.MakupAdspotId, ",")
-			for z := 0; j < len(s); z++ {
+			for z := 0; z < len(s); z++ {
 
 				ThisMakeupAdspot, _ := t.getAdspot(stub, s[z])
 				MakeupAdspotData = append(MakeupAdspotData, ThisMakeupAdspot)
