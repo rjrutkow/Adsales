@@ -777,6 +777,7 @@ func (t *SimpleChaincode) queryTraceAdSpots(stub shim.ChaincodeStubInterface, ar
 		ThisQueryTraceAdspotsReturnStruct.TargetGrp = ThisAdspot.TargetGrp
 		ThisQueryTraceAdspotsReturnStruct.UniqueAdspotId = ThisAdspot.UniqueAdspotId
 		ThisQueryTraceAdspotsReturnStruct.ContractResults = ThisAdspot.ContractResults
+		ThisQueryTraceAdspotsReturnStruct.MakupAdspotId = ThisAdspot.MakupAdspotId
 
 		if ThisAdspot.MakupAdspotId != noMakeup {
 			fmt.Println("Makeup addspot(s) detected within queryTraceAdSpots")
