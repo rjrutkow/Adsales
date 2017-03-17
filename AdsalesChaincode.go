@@ -21,6 +21,7 @@ const noMakeup string = ""
 const noValue int = -1 //Default for empty numerical values
 const noTime string = "11 May 16 12:00 UTC"
 const noContractResults string = "No report available"
+const isMakeup = -2
 
 //STRUCTURES --------------------------------------------------------------------------------------------------------------------------
 // SimpleChaincode required structure
@@ -681,10 +682,17 @@ func (t *SimpleChaincode) reportAsRun(stub shim.ChaincodeStubInterface, args []s
 					//NEW CODE
 					s := strings.Split(AdSpotObj.MakupAdspotId, ",")
 					for z := 0; z < len(s); z++ {
-						fmt.Println("This is MakeupID:", s[z])
-						adAgencyAllPointers.UniqueAdspotId = append(adAgencyAllPointers.UniqueAdspotId, s[z])
-						advertiserAllPointers.UniqueAdspotId = append(advertiserAllPointers.UniqueAdspotId, s[z])
+						trimmedID := strings.TrimSpace(s[z])
+						fmt.Println("This is MakeupID:", trimmedID)
 
+						//Update Pointers
+						adAgencyAllPointers.UniqueAdspotId = append(adAgencyAllPointers.UniqueAdspotId, trimmedID)
+						advertiserAllPointers.UniqueAdspotId = append(advertiserAllPointers.UniqueAdspotId, trimmedID)
+
+						//Flag the Adspot as a Makeup Adspot
+						makeupAdspot, _ := t.getAdspot(stub, trimmedID)
+						makeupAdspot.AdspotId = isMakeup
+						t.putAdspot(stub, makeupAdspot)
 					}
 
 					t.putAllAdspotPointers(stub, adAgencyAllPointers, AdSpotObj.AdAgencyId)
@@ -784,16 +792,19 @@ func (t *SimpleChaincode) queryTraceAdSpots(stub shim.ChaincodeStubInterface, ar
 			//NEW CODE
 			var MakeupAdspotData []adspot
 
+			ThisAdspot.MakupAdspotId = ThisAdspot.MakupAdspotId
 			s := strings.Split(ThisAdspot.MakupAdspotId, ",")
 			for z := 0; z < len(s); z++ {
-
-				ThisMakeupAdspot, _ := t.getAdspot(stub, s[z])
+				fmt.Printf(s[z])
+				ThisMakeupAdspot, _ := t.getAdspot(stub, strings.TrimSpace(s[z]))
 				MakeupAdspotData = append(MakeupAdspotData, ThisMakeupAdspot)
 			}
 			ThisQueryTraceAdspotsReturnStruct.MakeupAdspotData = MakeupAdspotData
 		}
 
-		adspotResultsArray = append(adspotResultsArray, ThisQueryTraceAdspotsReturnStruct)
+		if ThisQueryTraceAdspotsReturnStruct.AdspotId != isMakeup {
+			adspotResultsArray = append(adspotResultsArray, ThisQueryTraceAdspotsReturnStruct)
+		}
 
 	}
 	jsonAsBytes, err := json.Marshal(adspotResultsArray)
